@@ -1,92 +1,98 @@
 ﻿using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
-using System.Threading.Tasks;
-using System.Threading;
-using Microsoft.Extensions.Hosting;
 using System.Text;
-using System.Diagnostics;
-using System;
-using System.Data.Common;
-using System.Threading.Channels;
-using Microsoft.Extensions.Logging;
 
-namespace WebConsumer.Services
+namespace WebConsumer.Services;
+
+public class ConsumerService : BackgroundService
 {
-    public class ConsumerService : BackgroundService
+    private readonly ILogger<ConsumerService> _logger;
+    private IConnection _connection;
+    private IChannel _channel;
+    private const string QueueName = "connections";
+    public ConsumerService(ILogger<ConsumerService> logger)
     {
-        private readonly ILogger<ConsumerService> _logger;
-        private IConnection _connection;
-        private IChannel _channel;
-        private const string QueueName = "connections";
-        public ConsumerService(ILogger<ConsumerService> logger)
+        _logger = logger;
+    }
+
+    private async Task InitializeComponentsAsync()
+    {
+
+        var factory = new ConnectionFactory
         {
-            _logger = logger;
-            InitializingСomponents();
+            HostName = "localhost",
+            Port = 5672,
+            UserName = "guest",
+            Password = "guest"
+        };
+
+        _connection = await factory.CreateConnectionAsync();
+        _channel = await _connection.CreateChannelAsync();
+
+        await _channel.QueueDeclareAsync(queue: QueueName,
+                                         durable: false,
+                                         exclusive: false,
+                                         autoDelete: false,
+                                         arguments: null);
+
+        _logger.LogInformation("✅ Подключение к RabbitMQ установлено.");
+
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        await InitializeComponentsAsync();
+        if (_channel == null)
+        {
+            _logger.LogError("❌ _channel не инициализирован.");
+            return;
         }
 
-        private async Task InitializingСomponents()
-        {
-            
-            var factory = new ConnectionFactory
-            {
-                HostName = "localhost",
-                Port = 5672,
-                UserName = "guest",
-                Password = "guest"
-            };
+        _logger.LogInformation("Consumer запущен, ожидаю сообщения...");
 
-            using (_connection = await factory.CreateConnectionAsync())
-            using (_channel = await _connection.CreateChannelAsync())
+        var consumer = new AsyncEventingBasicConsumer(_channel);
+
+        consumer.ReceivedAsync += async (model, ea) =>
+        {
+            try
             {
-                Task<QueueDeclareOk> task =
-                    _channel.QueueDeclareAsync(queue: "connections",
-                                        durable: false,
-                                        exclusive: false,
-                                        autoDelete: false);
+                var body = ea.Body.ToArray();
+                var message = Encoding.UTF8.GetString(body);
+
+                // Имитация обработки
+                _logger.LogInformation($"📩 Получено сообщение: {message}");
+                await Task.Delay(500); // Симуляция обработки
+
+                // Подтверждение обработки сообщения
+                _channel.BasicAckAsync(ea.DeliveryTag, false);
             }
-
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            while (_channel == null)
+            catch (Exception ex)
             {
-                _logger.LogWarning("⏳ Ожидание подключения к RabbitMQ...");
-                await Task.Delay(1000, stoppingToken);
+                _logger.LogError(ex, "Ошибка обработки сообщения");
             }
+        };
 
-            var consumer = new AsyncEventingBasicConsumer(_channel);
+        await _channel.BasicConsumeAsync(queue: QueueName, autoAck: false, consumer: consumer);
 
-            consumer.ReceivedAsync += async (model, ea) =>
-            {
-                try
-                {
-                    var body = ea.Body.ToArray();
-                    var message = Encoding.UTF8.GetString(body);
-
-                    // Имитация обработки
-                    _logger.LogInformation($"[Received] {message}");
-                    await Task.Delay(500); // Симуляция обработки
-
-                    // Подтверждение обработки сообщения
-                    _channel.BasicAckAsync(ea.DeliveryTag, false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Ошибка обработки сообщения");
-                }
-            };
-
-            _channel.BasicConsumeAsync(queue: QueueName, autoAck: false, consumer: consumer);
-
-            await Task.CompletedTask;
-        }
-
-        public override void Dispose()
+        while (!stoppingToken.IsCancellationRequested)
         {
-            _channel?.CloseAsync();
-            _connection?.CloseAsync();
-            base.Dispose();
+            await Task.Delay(1000, stoppingToken);
         }
+
+        //await Task.CompletedTask;
+    }
+
+    public override async void Dispose()
+    {
+        if (_channel != null)
+        {
+            await _channel.CloseAsync();
+        }
+        if (_connection != null)
+        {
+            await _connection.CloseAsync();
+        }
+
+        base.Dispose();
     }
 }
