@@ -11,7 +11,7 @@ public class ProduserService : IProduserService,IDisposable
     private readonly IChannel _channel;
     private const string QueueName = "connections";
 
-    public ProduserService()
+    public ProduserService(IConfiguration configuration)
     {
         var factory = new ConnectionFactory
         {

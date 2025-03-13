@@ -1,8 +1,11 @@
+using WebConsumer.Configurations;
 using WebProducer.Services;
 
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.Configure<AppSettings>(builder.Configuration);
 
 builder.Services.AddScoped<IProduserService, ProduserService>();
 

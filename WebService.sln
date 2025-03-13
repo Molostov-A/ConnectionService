@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebProducer", "WebProducer\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebConsumer", "WebConsumer\WebConsumer.csproj", "{A5618A0E-4F72-49B6-B8C1-93DAE1BC0FA1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebConsumer.Data", "WebConsumer.Data\WebConsumer.Data.csproj", "{B261E808-AFB2-4CC0-AA63-9D6A9D70317C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataLibrary", "DataLibrary\DataLibrary.csproj", "{B261E808-AFB2-4CC0-AA63-9D6A9D70317C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

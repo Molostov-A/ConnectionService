@@ -1,47 +1,31 @@
 ﻿using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
 using System.Text;
+using CommonData.Services;
+using DataLibrary.Models;
+using WebConsumer.Configurations;
+using Microsoft.Extensions.Options;
 
 namespace WebConsumer.Services;
 
 public class ConsumerService : BackgroundService
 {
     private readonly ILogger<ConsumerService> _logger;
+    private readonly IDataService _dataService;
+    private readonly AppSettings _appSettings;
     private IConnection _connection;
     private IChannel _channel;
-    private const string QueueName = "connections";
-    public ConsumerService(ILogger<ConsumerService> logger)
+    public ConsumerService(ILogger<ConsumerService> logger, IDataService dataService, IOptions<AppSettings> appSettings)
     {
         _logger = logger;
-    }
-
-    private async Task InitializeComponentsAsync()
-    {
-
-        var factory = new ConnectionFactory
-        {
-            HostName = "localhost",
-            Port = 5672,
-            UserName = "guest",
-            Password = "guest"
-        };
-
-        _connection = await factory.CreateConnectionAsync();
-        _channel = await _connection.CreateChannelAsync();
-
-        await _channel.QueueDeclareAsync(queue: QueueName,
-                                         durable: false,
-                                         exclusive: false,
-                                         autoDelete: false,
-                                         arguments: null);
-
-        _logger.LogInformation("✅ Подключение к RabbitMQ установлено.");
-
+        _dataService = dataService;
+        _appSettings = appSettings.Value;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         await InitializeComponentsAsync();
+
         if (_channel == null)
         {
             _logger.LogError("❌ _channel не инициализирован.");
@@ -59,9 +43,13 @@ public class ConsumerService : BackgroundService
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
 
+                long userId = 1; // Пример, ты будешь извлекать реальные данные
+                string address = "192.168.1.1";
+                string protocol = "IPv4";
                 // Имитация обработки
                 _logger.LogInformation($"📩 Получено сообщение: {message}");
-                await Task.Delay(500); // Симуляция обработки
+                await _dataService.SaveConnectionAsync(userId, address, protocol);
+                
 
                 // Подтверждение обработки сообщения
                 _channel.BasicAckAsync(ea.DeliveryTag, false);
@@ -72,14 +60,37 @@ public class ConsumerService : BackgroundService
             }
         };
 
-        await _channel.BasicConsumeAsync(queue: QueueName, autoAck: false, consumer: consumer);
+        await _channel.BasicConsumeAsync(queue: _appSettings.RabbitMQ.QueueName, autoAck: false, consumer: consumer);
 
         while (!stoppingToken.IsCancellationRequested)
         {
             await Task.Delay(1000, stoppingToken);
         }
+    }
 
-        //await Task.CompletedTask;
+    private async Task InitializeComponentsAsync()
+    {
+        var rabbitMq = _appSettings.RabbitMQ;
+
+        var factory = new ConnectionFactory
+        {
+            HostName = rabbitMq.HostName,
+            Port = rabbitMq.Port,
+            UserName = rabbitMq.UserName,
+            Password = rabbitMq.Password
+        };
+
+        _connection = await factory.CreateConnectionAsync();
+        _channel = await _connection.CreateChannelAsync();
+
+        await _channel.QueueDeclareAsync(queue: rabbitMq.QueueName,
+                                         durable: false,
+                                         exclusive: false,
+                                         autoDelete: false,
+                                         arguments: null);
+
+        _logger.LogInformation("✅ Подключение к RabbitMQ установлено.");
+
     }
 
     public override async void Dispose()
