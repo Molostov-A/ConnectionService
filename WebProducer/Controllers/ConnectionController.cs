@@ -3,7 +3,7 @@ using RabbitMQ.Client;
 using System.Text.Json;
 using System.Text;
 using ConnectionService.Models;
-using WebProducer.RabbitMq;
+using WebProducer.Services;
 
 namespace ConnectionService.Controllers
 {

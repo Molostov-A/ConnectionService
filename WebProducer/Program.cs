@@ -1,4 +1,6 @@
-using WebProducer.RabbitMq;
+using WebProducer.Services;
+
+
 
 var builder = WebApplication.CreateBuilder(args);
 

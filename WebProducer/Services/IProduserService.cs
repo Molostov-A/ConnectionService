@@ -1,8 +1,7 @@
-﻿namespace WebProducer.RabbitMq
+﻿namespace WebProducer.Services;
+
+public interface IProduserService
 {
-    public interface IProduserService
-    {
-        Task SendMessageAsync(object obj);
-        Task SendMessageAsync(string message);
-    }
+    Task SendMessageAsync(object obj);
+    Task SendMessageAsync(string message);
 }

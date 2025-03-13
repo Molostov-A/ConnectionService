@@ -1,17 +1,17 @@
 ﻿using RabbitMQ.Client;
+using System.Data.Common;
 using System.Text;
 using System.Text.Json;
-using WebProducer.RabbitMq;
+using System.Threading.Channels;
 
-public class ProduserService : IProduserService
+namespace WebProducer.Services;
+public class ProduserService : IProduserService,IDisposable
 {
-    public async Task SendMessageAsync(object obj)
-    {
-        var message = JsonSerializer.Serialize(obj);
-        await SendMessageAsync(message);
-    }
+    private readonly IConnection _connection;
+    private readonly IChannel _channel;
+    private const string QueueName = "connections";
 
-    public async Task SendMessageAsync(string message)
+    public ProduserService()
     {
         var factory = new ConnectionFactory
         {
@@ -21,26 +21,39 @@ public class ProduserService : IProduserService
             Password = "guest"
         };
 
-        using (var connection = await factory.CreateConnectionAsync())
-        using (var channel = await connection.CreateChannelAsync())
-        {
-            Task<QueueDeclareOk> task = 
-                channel.QueueDeclareAsync(queue: "connections",
-                                        durable: false,
-                                        exclusive: false,
-                                        autoDelete: false,
-                                        arguments: null);
+        _connection = factory.CreateConnectionAsync().Result; // Подключаемся один раз
+        _channel = _connection.CreateChannelAsync().Result;
 
-            var body = Encoding.UTF8.GetBytes(message);
-            var props = new BasicProperties();
-            props.ContentType = "text/plain";
-            props.DeliveryMode = (DeliveryModes)2;
+        _channel.QueueDeclareAsync(queue: QueueName,
+                                   durable: false,
+                                   exclusive: false,
+                                   autoDelete: false,
+                                   arguments: null).Wait();
+    }
 
-            await channel.BasicPublishAsync(exchange: "",
-                                                routingKey: "connections",
+    public async Task SendMessageAsync(object obj)
+    {
+        var message = JsonSerializer.Serialize(obj);
+        await SendMessageAsync(message);
+    }
+
+    public async Task SendMessageAsync(string message)
+    {
+        var body = Encoding.UTF8.GetBytes(message);
+        var props = new BasicProperties();
+        props.ContentType = "text/plain";
+        props.DeliveryMode = (DeliveryModes)2;
+
+        await _channel.BasicPublishAsync(exchange: "",
+                                                routingKey: QueueName,
                                                 mandatory: true,
                                                 basicProperties: props,
-                                                body: body);
-        }
+                                                body: body);        
+    }
+
+    public void Dispose()
+    {
+        _channel?.CloseAsync().Wait();
+        _connection?.CloseAsync().Wait();
     }
 }
