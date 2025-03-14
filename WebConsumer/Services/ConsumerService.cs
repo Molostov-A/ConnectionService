@@ -67,7 +67,7 @@ public class ConsumerService : BackgroundService
             }
         };
 
-        await _channel.BasicConsumeAsync(queue: _appSettings.RabbitMQ.QueueName, autoAck: false, consumer: consumer);
+        await _channel.BasicConsumeAsync(queue: _appSettings.RabbitMQ.RequestQueue, autoAck: false, consumer: consumer);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -89,7 +89,7 @@ public class ConsumerService : BackgroundService
         _connection = await factory.CreateConnectionAsync();
         _channel = await _connection.CreateChannelAsync();
 
-        await _channel.QueueDeclareAsync(queue: rabbitMq.QueueName,
+        await _channel.QueueDeclareAsync(queue: rabbitMq.RequestQueue,
                                          durable: false,
                                          exclusive: false,
                                          autoDelete: false,

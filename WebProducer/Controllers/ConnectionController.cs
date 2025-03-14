@@ -19,7 +19,7 @@ namespace ConnectionService.Controllers
         }
 
         [HttpPost("connect")]
-        public IActionResult Connect([FromBody] ConnectionRequest request)
+        public IActionResult Connect([FromBody] UserConnectionMessage request)
         {
             _produserService.SendMessageAsync(request).Wait();
 

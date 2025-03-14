@@ -1,6 +1,6 @@
-﻿namespace ConnectionService.Models
+﻿namespace WebProducer.Models
 {
-    public class ConnectionRequest
+    public class UserConnectionResponse
     {
         public long UserId { get; set; }
         public string IpAddress { get; set; }

@@ -6,5 +6,6 @@ public class RabbitMQSettings
     public int Port { get; set; }
     public string UserName { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
-    public string QueueName { get; set; } = string.Empty;
+    public string RequestQueue { get; set; } = string.Empty;
+    public string ResponceQueue { get; set; } = string.Empty;
 }

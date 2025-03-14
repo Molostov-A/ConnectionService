@@ -34,7 +34,7 @@ public class UserConnectionController : ControllerBase
 
         string protocol = GetIpProtocol(ip);
 
-        var message = new ConnectionRequest
+        var message = new UserConnectionMessage
         {
             UserId = userId,
             IpAddress = ip,
