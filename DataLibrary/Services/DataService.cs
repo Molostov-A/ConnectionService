@@ -1,5 +1,6 @@
 ﻿using DataLibrary;
 using DataLibrary.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace CommonData.Services;
 
@@ -14,19 +15,41 @@ public class DataService : IDataService
 
     public async Task SaveConnectionAsync(long userId, string address, string protocol)
     {
-        // Добавляем IP-адрес
-        var ipAddress = new IpAddress { Address = address, Protocol = protocol };
-        await _dbContext.IpAddresses.AddAsync(ipAddress);
+        // Проверяем, существует ли IP-адрес
+        var ipAddress = await _dbContext.IpAddresses
+            .FirstOrDefaultAsync(ip => ip.Address == address && ip.Protocol == protocol);
 
-        // Добавляем пользователя
-        var user = new User { Id = userId, FirstName = "John", LastName = "Doe" }; // Пример
-        await _dbContext.Users.AddAsync(user);
+        if (ipAddress == null)
+        {
+            ipAddress = new IpAddress { Address = address, Protocol = protocol };
+            await _dbContext.IpAddresses.AddAsync(ipAddress);
+            await _dbContext.SaveChangesAsync(); // 💾 Сохраняем, чтобы получить Id
+        }
 
-        // Добавляем соединение
-        var connection = new Connection { UserId = user.Id, IpAddressId = ipAddress.Id };
-        await _dbContext.Connections.AddAsync(connection);
+        // Проверяем, существует ли пользователь
+        var user = await _dbContext.Users.FindAsync(userId);
+        if (user == null)
+        {
+            user = new User { Id = userId, FirstName = "John", LastName = "Doe" };
+            await _dbContext.Users.AddAsync(user);
+            await _dbContext.SaveChangesAsync(); // 💾 Сохраняем, чтобы получить Id
+        }
 
-        // Сохраняем все изменения в БД
-        await _dbContext.SaveChangesAsync();
+        // Проверяем, существует ли уже такое соединение
+        var existingConnection = await _dbContext.Connections
+            .FirstOrDefaultAsync(c => c.UserId == user.Id && c.IpAddressId == ipAddress.Id);
+
+        if (existingConnection == null) // ✅ Добавляем соединение, только если его ещё нет
+        {
+            var connection = new Connection
+            {
+                User = user,
+                IpAddress = ipAddress,
+                ConnectedAt = DateTime.UtcNow
+            };
+
+            await _dbContext.Connections.AddAsync(connection);
+            await _dbContext.SaveChangesAsync();
+        }
     }
 }

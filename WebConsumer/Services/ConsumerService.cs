@@ -2,23 +2,28 @@
 using RabbitMQ.Client;
 using System.Text;
 using CommonData.Services;
-using DataLibrary.Models;
 using WebConsumer.Configurations;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
+using ConnectionService.Models;
+using System.Threading.Channels;
 
 namespace WebConsumer.Services;
 
 public class ConsumerService : BackgroundService
 {
     private readonly ILogger<ConsumerService> _logger;
-    private readonly IDataService _dataService;
+    private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly AppSettings _appSettings;
     private IConnection _connection;
     private IChannel _channel;
-    public ConsumerService(ILogger<ConsumerService> logger, IDataService dataService, IOptions<AppSettings> appSettings)
+
+    private readonly List<ConnectionRequest> _messageBuffer = new();
+    private readonly SemaphoreSlim _semaphore = new(1, 1); // Для потокобезопасности
+    public ConsumerService(ILogger<ConsumerService> logger, IServiceScopeFactory serviceScopeFactory, IOptions<AppSettings> appSettings)
     {
         _logger = logger;
-        _dataService = dataService;
+        _serviceScopeFactory = serviceScopeFactory;
         _appSettings = appSettings.Value;
     }
 
@@ -43,16 +48,21 @@ public class ConsumerService : BackgroundService
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
 
-                long userId = 1; // Пример, ты будешь извлекать реальные данные
-                string address = "192.168.1.1";
-                string protocol = "IPv4";
-                // Имитация обработки
-                _logger.LogInformation($"📩 Получено сообщение: {message}");
-                await _dataService.SaveConnectionAsync(userId, address, protocol);
-                
+                var connectionRequest = JsonSerializer.Deserialize<ConnectionRequest>(message);
+
+                long userId = connectionRequest.UserId;
+                string address = connectionRequest.IpAddress;
+                string protocol = connectionRequest.Protocol;
+
+                // ✅ Создаём новую область видимости (scope)
+                using (var scope = _serviceScopeFactory.CreateScope())
+                {
+                    var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
+                    await dataService.SaveConnectionAsync(userId, address, protocol);
+                }
 
                 // Подтверждение обработки сообщения
-                _channel.BasicAckAsync(ea.DeliveryTag, false);
+                await _channel.BasicAckAsync(ea.DeliveryTag, false);
             }
             catch (Exception ex)
             {
@@ -67,7 +77,6 @@ public class ConsumerService : BackgroundService
             await Task.Delay(1000, stoppingToken);
         }
     }
-
     private async Task InitializeComponentsAsync()
     {
         var rabbitMq = _appSettings.RabbitMQ;

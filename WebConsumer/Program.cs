@@ -2,7 +2,6 @@
 using CommonData.Services;
 using DataLibrary;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using WebConsumer;
 using WebConsumer.Configurations;
 using WebConsumer.Services;
