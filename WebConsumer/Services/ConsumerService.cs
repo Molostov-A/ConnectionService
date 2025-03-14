@@ -10,7 +10,7 @@ using System.Threading.Channels;
 
 namespace WebConsumer.Services;
 
-public class ConsumerService : BackgroundService
+public class ConsumerService : BackgroundService, IDisposable
 {
     private readonly ILogger<ConsumerService> _logger;
     private readonly IServiceScopeFactory _serviceScopeFactory;

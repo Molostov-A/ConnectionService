@@ -2,6 +2,6 @@
 
 public interface IProduserService
 {
-    Task SendMessageAsync(object obj);
-    Task SendMessageAsync(string message);
+    Task SendAsync(object obj, string correlationId);
+    Task SendAsync(string message, string correlationId);
 }

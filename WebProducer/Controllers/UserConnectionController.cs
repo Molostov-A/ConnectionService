@@ -12,10 +12,12 @@ using WebProducer.Services;
 public class UserConnectionController : ControllerBase
 {
     private readonly IProduserService _produserService;
+    private readonly IConsumerService _consumerService;
 
-    public UserConnectionController(IProduserService produserService)
+    public UserConnectionController(IProduserService produserService, IConsumerService consumerService)
     {
         _produserService = produserService;
+        _consumerService = consumerService;
     }
 
     [HttpPost]
@@ -27,6 +29,7 @@ public class UserConnectionController : ControllerBase
         }
 
         string protocol = GetIpProtocol(request.Ip);
+        string correlationId = Guid.NewGuid().ToString();
 
         var message = new UserConnectionMessage
         {
@@ -35,14 +38,14 @@ public class UserConnectionController : ControllerBase
             Protocol = protocol
         };
 
-        await _produserService.SendMessageAsync(message);
+        await _produserService.SendAsync(message, correlationId);
 
-        var response = new UserConnectionResponse
+        var response = await _consumerService.WaitForReplyAsync(correlationId);
+
+        if (!_consumerService.IsListening)
         {
-            UserId = userId,
-            IpAddress = request.Ip,
-            Protocol = protocol
-        };
+            _consumerService.StartListening();
+        }
 
         return Ok(response);
     }

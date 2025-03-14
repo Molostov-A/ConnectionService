@@ -12,46 +12,48 @@ public class ProduserService : IProduserService,IDisposable
     private readonly IConnection _connection;
     private readonly IChannel _channel;
     private readonly AppSettings _appSettings;
+    private readonly RabbitMQSettings _rabbitMqSettings;
 
-    public ProduserService(IConfiguration configuration, IOptions<AppSettings> appSettings)
+    public ProduserService(IOptions<AppSettings> appSettings)
     {
         _appSettings = appSettings.Value;
 
         var factory = new ConnectionFactory
         {
-            HostName = _appSettings.RabbitMQ.HostName,
-            Port = _appSettings.RabbitMQ.Port,
-            UserName = _appSettings.RabbitMQ.UserName,
-            Password = _appSettings.RabbitMQ.Password
+            HostName = _rabbitMqSettings.HostName,
+            Port = _rabbitMqSettings.Port,
+            UserName = _rabbitMqSettings.UserName,
+            Password = _rabbitMqSettings.Password
         };
 
         _connection = factory.CreateConnectionAsync().Result; // Подключаемся один раз
         _channel = _connection.CreateChannelAsync().Result;
 
-        _channel.QueueDeclareAsync(queue: _appSettings.RabbitMQ.RequestQueue,
+        _channel.QueueDeclareAsync(queue: _rabbitMqSettings.RequestQueue,
                                    durable: false,
                                    exclusive: false,
                                    autoDelete: false,
                                    arguments: null).Wait();
     }
 
-    public async Task SendMessageAsync(object obj)
+    public async Task SendAsync(object obj, string correlationId)
     {
         var message = JsonSerializer.Serialize(obj);
-        await SendMessageAsync(message);
+        await SendAsync(message, correlationId);
     }
 
-    public async Task SendMessageAsync(string message)
+    public async Task SendAsync(string message, string correlationId)
     {
         var body = Encoding.UTF8.GetBytes(message);
-        var props = new BasicProperties();
-        props.ContentType = "text/plain";
-        props.DeliveryMode = (DeliveryModes)2;
+        var properties = new BasicProperties();
+        properties.ContentType = "text/plain";
+        properties.DeliveryMode = (DeliveryModes)2;
+        properties.CorrelationId = correlationId;
 
         await _channel.BasicPublishAsync(exchange: "",
-                                                routingKey: _appSettings.RabbitMQ.RequestQueue,
+                                                routingKey: _rabbitMqSettings.RequestQueue,
                                                 mandatory: true,
-                                                basicProperties: props,
+                                                basicProperties: properties,
                                                 body: body);        
     }
 
