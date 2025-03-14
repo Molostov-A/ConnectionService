@@ -1,4 +1,4 @@
 
-[Tables](.\Readme\Tables.md)
+[Tables](/Readme/Tables.md)
 
-[API](.\Readme\API.md)
+[API](/Readme/API.md)
