@@ -17,9 +17,6 @@ public class ConsumerService : BackgroundService
     private readonly AppSettings _appSettings;
     private IConnection _connection;
     private IChannel _channel;
-
-    private readonly List<ConnectionRequest> _messageBuffer = new();
-    private readonly SemaphoreSlim _semaphore = new(1, 1); // Для потокобезопасности
     public ConsumerService(ILogger<ConsumerService> logger, IServiceScopeFactory serviceScopeFactory, IOptions<AppSettings> appSettings)
     {
         _logger = logger;

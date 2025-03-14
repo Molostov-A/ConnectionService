@@ -1,30 +1,34 @@
-﻿using RabbitMQ.Client;
+﻿using Microsoft.Extensions.Options;
+using RabbitMQ.Client;
 using System.Data.Common;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Channels;
+using WebConsumer.Configurations;
 
 namespace WebProducer.Services;
 public class ProduserService : IProduserService,IDisposable
 {
     private readonly IConnection _connection;
     private readonly IChannel _channel;
-    private const string QueueName = "connections";
+    private readonly AppSettings _appSettings;
 
-    public ProduserService(IConfiguration configuration)
+    public ProduserService(IConfiguration configuration, IOptions<AppSettings> appSettings)
     {
+        _appSettings = appSettings.Value;
+
         var factory = new ConnectionFactory
         {
-            HostName = "localhost",
-            Port = 5672,
-            UserName = "guest",
-            Password = "guest"
+            HostName = _appSettings.RabbitMQ.HostName,
+            Port = _appSettings.RabbitMQ.Port,
+            UserName = _appSettings.RabbitMQ.UserName,
+            Password = _appSettings.RabbitMQ.Password
         };
 
         _connection = factory.CreateConnectionAsync().Result; // Подключаемся один раз
         _channel = _connection.CreateChannelAsync().Result;
 
-        _channel.QueueDeclareAsync(queue: QueueName,
+        _channel.QueueDeclareAsync(queue: _appSettings.RabbitMQ.QueueName,
                                    durable: false,
                                    exclusive: false,
                                    autoDelete: false,
@@ -45,7 +49,7 @@ public class ProduserService : IProduserService,IDisposable
         props.DeliveryMode = (DeliveryModes)2;
 
         await _channel.BasicPublishAsync(exchange: "",
-                                                routingKey: QueueName,
+                                                routingKey: _appSettings.RabbitMQ.QueueName,
                                                 mandatory: true,
                                                 basicProperties: props,
                                                 body: body);        
