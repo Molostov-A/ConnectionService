@@ -30,7 +30,7 @@ public class DataService : IDataService
         var user = await _dbContext.Users.FindAsync(userId);
         if (user == null)
         {
-            user = new User { Id = userId, FirstName = "John", LastName = "Doe" };
+            user = new User { Id = userId, FirstName = "unknown", LastName = "unknown" };
             await _dbContext.Users.AddAsync(user);
             await _dbContext.SaveChangesAsync(); // 💾 Сохраняем, чтобы получить Id
         }

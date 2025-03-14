@@ -28,7 +28,7 @@ public class ProduserService : IProduserService,IDisposable
         _connection = factory.CreateConnectionAsync().Result; // Подключаемся один раз
         _channel = _connection.CreateChannelAsync().Result;
 
-        _channel.QueueDeclareAsync(queue: _appSettings.RabbitMQ.QueueName,
+        _channel.QueueDeclareAsync(queue: _appSettings.RabbitMQ.RequestQueue,
                                    durable: false,
                                    exclusive: false,
                                    autoDelete: false,
@@ -49,7 +49,7 @@ public class ProduserService : IProduserService,IDisposable
         props.DeliveryMode = (DeliveryModes)2;
 
         await _channel.BasicPublishAsync(exchange: "",
-                                                routingKey: _appSettings.RabbitMQ.QueueName,
+                                                routingKey: _appSettings.RabbitMQ.RequestQueue,
                                                 mandatory: true,
                                                 basicProperties: props,
                                                 body: body);        

@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using WebProducer.Models;
 using WebProducer.Services;
 
 [ApiController]
@@ -18,32 +19,32 @@ public class UserConnectionController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> ConnectUser(long userId, [FromBody] JsonObject request)
+    public async Task<IActionResult> ConnectUser(long userId, [FromBody] UserConnectionRequest request)
     {
-        if (!request.TryGetPropertyValue("ip", out var ipNode) || ipNode is null)
-        {
-            return BadRequest(new { message = "IP address is missing or invalid format" });
-        }
-
-        string? ip = ipNode.GetValue<string?>();
-
-        if (!IsValidIp(ip))
+        if (string.IsNullOrWhiteSpace(request.Ip) || !IsValidIp(request.Ip))
         {
             return BadRequest(new { message = "Invalid IP address" });
         }
 
-        string protocol = GetIpProtocol(ip);
+        string protocol = GetIpProtocol(request.Ip);
 
         var message = new UserConnectionMessage
         {
             UserId = userId,
-            IpAddress = ip,
+            IpAddress = request.Ip,
             Protocol = protocol
         };
 
         await _produserService.SendMessageAsync(message);
 
-        return Ok(message);
+        var response = new UserConnectionResponse
+        {
+            UserId = userId,
+            IpAddress = request.Ip,
+            Protocol = protocol
+        };
+
+        return Ok(response);
     }
 
     private bool IsValidIp(string ipAddress)
