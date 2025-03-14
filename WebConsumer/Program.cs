@@ -20,7 +20,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Регистрация сервисов
 builder.Services.AddScoped<IDataService, DataService>();
-builder.Services.AddScoped<ConsumerService>();
+builder.Services.AddScoped<IConsu,ConsumerService>();
 
 // Регистрация Hosted Service с использованием фабрики
 builder.Services.AddHostedService<ConsumerServiceHosted>();

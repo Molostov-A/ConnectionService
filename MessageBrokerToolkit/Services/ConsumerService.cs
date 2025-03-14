@@ -6,6 +6,9 @@ using WebConsumer.Configurations;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using ConnectionService.Models;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace WebConsumer.Services;
 
@@ -56,16 +59,6 @@ public class ConsumerService : BackgroundService, IDisposable
                     var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
                     await dataService.SaveConnectionAsync(userId, address, protocol);
                 }
-
-                var result = new UserConnectionResponse
-                {
-                    UserId = userId,
-                    IpAddress = address,
-                    Protocol = protocol,
-                    CorrelationId = 
-                };
-
-                var resultMessage = JsonSerializer.Serialize(result);
 
                 // Подтверждение обработки сообщения
                 await _channel.BasicAckAsync(ea.DeliveryTag, false);

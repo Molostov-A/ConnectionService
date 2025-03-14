@@ -5,8 +5,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Channels;
 using WebConsumer.Configurations;
+using WebProducer.Services;
 
-namespace WebProducer.Services;
+namespace WebConsumer.Services;
 public class ProduserService : IProduserService,IDisposable
 {
     private readonly IConnection _connection;
