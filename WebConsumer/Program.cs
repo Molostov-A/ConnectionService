@@ -2,40 +2,47 @@
 using CommonData.Services;
 using DataLibrary;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using WebConsumer;
 using WebConsumer.Configurations;
 using WebConsumer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Конфигурация настроек
 builder.Services.Configure<AppSettings>(builder.Configuration);
 
+// Получаем строку подключения из конфигурации
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Регистрация DbContext с использованием строки подключения
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))); // Вынесем строку подключения в appsettings.json
+    options.UseNpgsql(connectionString));
 
+// Регистрация сервисов
 builder.Services.AddScoped<IDataService, DataService>();
-
 builder.Services.AddScoped<ConsumerService>();
-builder.Services.AddHostedService(provider =>
-{
-    return provider.GetRequiredService<ConsumerService>();  // Используем scoped сервис в hosted
-}); 
 
+// Регистрация Hosted Service с использованием фабрики
+builder.Services.AddHostedService<ConsumerServiceHosted>();
 
+// Добавление поддержки контроллеров
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Добавление поддержки Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Создание приложения
 var app = builder.Build();
 
 // Миграции и создание базы данных
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    dbContext.Database.Migrate(); // Это выполнит миграцию и создаст таблицы
+    dbContext.Database.Migrate(); // Выполнение миграций
 }
 
-// Configure the HTTP request pipeline.
+// Конфигурация HTTP pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -43,9 +50,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
+// Запуск приложения
 app.Run();
