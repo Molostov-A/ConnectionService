@@ -1,4 +1,4 @@
-﻿namespace WebProducer.Services;
+﻿namespace MessageBrokerToolkit.Services;
 
 public interface IProduserService
 {

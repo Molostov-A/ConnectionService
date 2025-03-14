@@ -19,8 +19,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 // Регистрация сервисов
-builder.Services.AddScoped<IDataService, DataService>();
-builder.Services.AddScoped<IConsu,ConsumerService>();
+builder.Services.AddScoped<ConsumerService>();
 
 // Регистрация Hosted Service с использованием фабрики
 builder.Services.AddHostedService<ConsumerServiceHosted>();

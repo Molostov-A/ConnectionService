@@ -6,6 +6,7 @@ using WebConsumer.Configurations;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using ConnectionService.Models;
+using WebProducer.Models;
 
 namespace WebConsumer.Services;
 
@@ -39,16 +40,18 @@ public class ConsumerService : BackgroundService, IDisposable
 
         consumer.ReceivedAsync += async (model, ea) =>
         {
+            var correlationId = ea.BasicProperties.CorrelationId;
+            var body = ea.Body.ToArray();
+            var message = Encoding.UTF8.GetString(body);
+
+            var connectionRequest = JsonSerializer.Deserialize<ConnectionRequest>(message);
+
+            long userId = connectionRequest.UserId;
+            string address = connectionRequest.IpAddress;
+            string protocol = connectionRequest.Protocol;
+            string status = "";
             try
-            {
-                var body = ea.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-
-                var connectionRequest = JsonSerializer.Deserialize<ConnectionRequest>(message);
-
-                long userId = connectionRequest.UserId;
-                string address = connectionRequest.IpAddress;
-                string protocol = connectionRequest.Protocol;
+            {             
 
                 // ✅ Создаём новую область видимости (scope)
                 using (var scope = _serviceScopeFactory.CreateScope())
@@ -56,23 +59,45 @@ public class ConsumerService : BackgroundService, IDisposable
                     var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
                     await dataService.SaveConnectionAsync(userId, address, protocol);
                 }
-
-                var result = new UserConnectionResponse
-                {
-                    UserId = userId,
-                    IpAddress = address,
-                    Protocol = protocol,
-                    CorrelationId = 
-                };
-
-                var resultMessage = JsonSerializer.Serialize(result);
-
-                // Подтверждение обработки сообщения
-                await _channel.BasicAckAsync(ea.DeliveryTag, false);
+                status = "Success";
+                
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Ошибка обработки сообщения");
+                status = "Error";
+
+            }
+            finally
+            {
+                var result = new UserConnectionResponse()
+                {
+                    UserId = userId,
+                    IpAddress = address,
+                    Protocol = protocol,
+                    Status = status
+                };
+
+                var resultMessage = JsonSerializer.Serialize(result);
+
+                // Подготовка сообщения для ответа
+                var properties = new BasicProperties();
+                properties.ContentType = "text/plain";
+                properties.DeliveryMode = (DeliveryModes)2;
+                properties.CorrelationId = correlationId;
+                properties.ReplyTo = _appSettings.RabbitMQ.ResponseQueue; // Указываем очередь для ответа
+
+                // Отправляем результат в очередь ответов
+                await _channel.BasicPublishAsync(
+                    exchange: "",
+                    routingKey: _appSettings.RabbitMQ.ResponseQueue,
+                    mandatory: true,
+                    basicProperties: properties,
+                    body: Encoding.UTF8.GetBytes(resultMessage)
+                );
+
+                // Подтверждение обработки сообщения
+                await _channel.BasicAckAsync(ea.DeliveryTag, false);
             }
         };
 
