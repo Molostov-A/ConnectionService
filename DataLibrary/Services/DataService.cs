@@ -57,7 +57,7 @@ public class DataService : IDataService
         }
         catch (Exception ex)
         {
-            throw new Exception("Ошибка при сохранении соединения", ex);
+            throw new Exception("Error when saving a connection", ex);
         }
     }
 

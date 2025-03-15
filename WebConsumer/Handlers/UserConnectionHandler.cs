@@ -1,5 +1,7 @@
 ﻿using CommonData.Services;
 using MessageBrokerModelsLibrary.Models;
+using Microsoft.Extensions.Options;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using WebConsumer.Interfaces;
 
@@ -8,10 +10,15 @@ namespace WebConsumer.Handlers;
 public class UserConnectionHandler : MessageHandler<UserConnectionMessage>
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
-
+    private readonly JsonSerializerOptions _options;
     public UserConnectionHandler(IServiceScopeFactory serviceScopeFactory)
     {
         _serviceScopeFactory = serviceScopeFactory;
+        var _options = new JsonSerializerOptions
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // Отключает Unicode-экранирование
+            WriteIndented = false
+        };
     }
 
     public override async Task HandleAsync(string message, Dictionary<string, object> headers, string correlationId, IResponseProduser messageSender)
@@ -21,7 +28,7 @@ public class UserConnectionHandler : MessageHandler<UserConnectionMessage>
             var connectionRequest = JsonSerializer.Deserialize<UserConnectionMessage>(message);
             if (connectionRequest == null)
             {
-                await messageSender.SendResponseAsync(correlationId, "Ошибка: не удалось десериализовать сообщение.");
+                await messageSender.SendResponseAsync(correlationId, "Error: failed to deserialize the message.");
                 return;
             }
 
@@ -37,14 +44,14 @@ public class UserConnectionHandler : MessageHandler<UserConnectionMessage>
 
                 var response = new
                 {
-                    Message = "Соединение успешно сохранено",
+                    Message = "Connection saved successfully",
                     UserId = result.UserId,
                     IpAddress = result.IpAddress.Address,
                     Protocol = result.IpAddress.Protocol,
                     ConnectedAt = result.ConnectedAt
                 };
 
-                string responseJson = JsonSerializer.Serialize(response);
+                string responseJson = JsonSerializer.Serialize(response, _options);
                 await messageSender.SendResponseAsync(correlationId, responseJson);
             }
         }
