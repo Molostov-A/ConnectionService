@@ -1,21 +1,24 @@
-﻿using ConnectionService.Models;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using MessageBrokerModelsLibrary.Models;
 using System.Net;
 using System.Net.Sockets;
-using System.Text.Json.Nodes;
-using System.Threading.Tasks;
-using WebProducer.Models;
 using WebProducer.Services;
+using IConsumerServiceMBT = MessageBrokerToolkit.Interfaces.IConsumerServiceMBT;
+using IProduserServiceMBT = MessageBrokerToolkit.Interfaces.IProduserServiceMBT;
+using Microsoft.Extensions.Options;
+using WebProducer.Configurations;
 
 [ApiController]
 [Route("api/users/{userId}/connect")]
 public class UserConnectionController : ControllerBase
 {
-    private readonly IProduserService _produserService;
-    private readonly IConsumerService _consumerService;
+    private readonly IProduserServiceMBT _produserService;
+    private readonly IConsumerServiceMBT _consumerService;
+    private readonly AppSettings _appSettings;
 
-    public UserConnectionController(IProduserService produserService, IConsumerService consumerService)
+    public UserConnectionController(IProduserServiceMBT produserService, IConsumerServiceMBT consumerService, IOptions<AppSettings> appSettings)
     {
+        _appSettings = appSettings.Value;
         _produserService = produserService;
         _consumerService = consumerService;
     }
@@ -29,7 +32,6 @@ public class UserConnectionController : ControllerBase
         }
 
         string protocol = GetIpProtocol(request.Ip);
-        string correlationId = Guid.NewGuid().ToString();
 
         var message = new UserConnectionMessage
         {
@@ -38,15 +40,20 @@ public class UserConnectionController : ControllerBase
             Protocol = protocol
         };
 
-        await _produserService.SendAsync(message, correlationId);
+        //await _produserService.SendAsync(message, correlationId);
 
-        var response = await _consumerService.WaitForReplyAsync(correlationId);
+        //var response = await _consumerService.WaitForReplyAsync(correlationId);
 
-        if (!_consumerService.IsListening)
-        {
-            _consumerService.StartListening();
-        }
+        //if (!_consumerService.IsListening)
+        //{
+        //    _consumerService.StartListening();
+        //}
 
+        var correlationId = Guid.NewGuid().ToString();
+        await _produserService.SendAsync(request, correlationId, _appSettings.RabbitMQ.RequestQueue);
+
+        await _consumerService.StartConsumingAsync(_appSettings.RabbitMQ.ResponseQueue);
+        var response = await _consumerService.WaitForResponseAsync(correlationId);
         return Ok(response);
     }
 

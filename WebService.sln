@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataLibrary", "DataLibrary\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageBrokerToolkit", "MessageBrokerToolkit\MessageBrokerToolkit.csproj", "{3C78E700-077F-431E-BA38-6FF060A2DCC2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageBrokerModelsLibrary", "ModelsLibrary\MessageBrokerModelsLibrary.csproj", "{5631B69F-CDD3-483F-886F-388AAB588AB3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{3C78E700-077F-431E-BA38-6FF060A2DCC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C78E700-077F-431E-BA38-6FF060A2DCC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C78E700-077F-431E-BA38-6FF060A2DCC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5631B69F-CDD3-483F-886F-388AAB588AB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5631B69F-CDD3-483F-886F-388AAB588AB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5631B69F-CDD3-483F-886F-388AAB588AB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5631B69F-CDD3-483F-886F-388AAB588AB3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

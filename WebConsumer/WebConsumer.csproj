@@ -18,6 +18,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DataLibrary\DataLibrary.csproj" />
+    <ProjectReference Include="..\MessageBrokerToolkit\MessageBrokerToolkit.csproj" />
+    <ProjectReference Include="..\ModelsLibrary\MessageBrokerModelsLibrary.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Configurations\" />
   </ItemGroup>
 
 </Project>

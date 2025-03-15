@@ -13,7 +13,7 @@ public class DataService : IDataService
         _dbContext = dbContext;
     }
 
-    public async Task SaveConnectionAsync(long userId, string address, string protocol)
+    public async Task<object> SaveConnectionAsync(long userId, string address, string protocol)
     {
         // Проверяем, существует ли IP-адрес
         var ipAddress = await _dbContext.IpAddresses
@@ -35,21 +35,26 @@ public class DataService : IDataService
             await _dbContext.SaveChangesAsync(); // 💾 Сохраняем, чтобы получить Id
         }
 
-        // Проверяем, существует ли уже такое соединение
+        // Проверяем существующее соединение
         var existingConnection = await _dbContext.Connections
             .FirstOrDefaultAsync(c => c.UserId == user.Id && c.IpAddressId == ipAddress.Id);
 
-        if (existingConnection == null) // ✅ Добавляем соединение, только если его ещё нет
+        if (existingConnection != null)
         {
-            var connection = new Connection
-            {
-                User = user,
-                IpAddress = ipAddress,
-                ConnectedAt = DateTime.UtcNow
-            };
-
-            await _dbContext.Connections.AddAsync(connection);
-            await _dbContext.SaveChangesAsync();
+            return existingConnection; // Возвращаем уже существующее соединение
         }
+
+        // Создаём новое соединение
+        var connection = new Connection
+        {
+            User = user,
+            IpAddress = ipAddress,
+            ConnectedAt = DateTime.UtcNow
+        };
+
+        await _dbContext.Connections.AddAsync(connection);
+        await _dbContext.SaveChangesAsync();
+
+        return connection;
     }
 }

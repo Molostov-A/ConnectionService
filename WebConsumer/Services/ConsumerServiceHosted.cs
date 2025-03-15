@@ -1,6 +1,4 @@
-﻿using WebConsumer.Services;
-
-namespace WebConsumer;
+﻿namespace WebConsumer.Services;
 
 public class ConsumerServiceHosted : IHostedService
 {
@@ -15,14 +13,14 @@ public class ConsumerServiceHosted : IHostedService
     {
         using (var scope = _serviceProvider.CreateScope()) // Создаем область для разрешения scoped сервисов
         {
-            var consumerService = scope.ServiceProvider.GetRequiredService<ConsumerService>();
-            return consumerService.StartAsync(cancellationToken); // Запуск логики ConsumerService
+            var consumerService = scope.ServiceProvider.GetRequiredService<ConsumerBackgroundService>();
+            return consumerService.StartAsync(cancellationToken); // Запуск логики ConsumerBackgroundService
         }
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        // Остановка ConsumerService
+        // Остановка ConsumerServiceMBT
         return Task.CompletedTask;
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace MessageBrokerToolkit.Models;
+﻿namespace MessageBrokerModelsLibrary.Models;
 
 public class UserConnectionResponse
 {

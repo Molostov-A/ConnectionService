@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using MessageBrokerModelsLibrary.Configurations;
+using MessageBrokerModelsLibrary.Models;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -7,8 +9,7 @@ using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using WebConsumer.Configurations;
-using WebProducer.Models;
+using WebProducer.Configurations;
 using WebProducer.Services;
 
 public class ConsumerService : IConsumerService, IDisposable

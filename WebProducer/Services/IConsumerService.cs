@@ -1,11 +1,10 @@
-﻿using WebProducer.Models;
+﻿using MessageBrokerModelsLibrary.Models;
 
-namespace WebProducer.Services
+namespace WebProducer.Services;
+
+public interface IConsumerService
 {
-    public interface IConsumerService
-    {
-        Task<UserConnectionResponse> WaitForReplyAsync(string correlationId);
-        Task StartListening();
-        bool IsListening { get; }
-    }
+    Task<UserConnectionResponse> WaitForReplyAsync(string correlationId);
+    Task StartListening();
+    bool IsListening { get; }
 }

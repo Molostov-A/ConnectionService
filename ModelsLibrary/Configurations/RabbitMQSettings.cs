@@ -1,4 +1,4 @@
-﻿namespace WebConsumer.Configurations;
+﻿namespace MessageBrokerModelsLibrary.Configurations;
 
 public class RabbitMQSettings
 {

@@ -1,8 +1,10 @@
 
 using CommonData.Services;
 using DataLibrary;
+using MessageBrokerModelsLibrary.Configurations;
+using MessageBrokerToolkit.Interfaces;
+using MessageBrokerToolkit.Services;
 using Microsoft.EntityFrameworkCore;
-using WebConsumer;
 using WebConsumer.Configurations;
 using WebConsumer.Services;
 
@@ -10,6 +12,11 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Конфигурация настроек
 builder.Services.Configure<AppSettings>(builder.Configuration);
+//builder.Services.Configure<RabbitMQSettings>(builder.Configuration.GetSection("RabbitMQ"));
+
+// Регистрация ConsumerServiceMBT для AppSettings
+builder.Services.AddScoped(typeof(ConsumerServiceMBT<AppSettings>));
+builder.Services.AddScoped<IProduserServiceMBT, ProduserServiceMBT<AppSettings>>();
 
 // Получаем строку подключения из конфигурации
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -18,8 +25,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-// Регистрация сервисов
-builder.Services.AddScoped<ConsumerService>();
+builder.Services.AddScoped<IConsumerService, ConsumerService>();
+builder.Services.AddScoped<ConsumerBackgroundService>();
 
 // Регистрация Hosted Service с использованием фабрики
 builder.Services.AddHostedService<ConsumerServiceHosted>();

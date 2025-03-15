@@ -1,8 +1,7 @@
-﻿namespace WebConsumer.Configurations;
+﻿using MessageBrokerModelsLibrary.Configurations;
 
-public class AppSettings
+namespace WebProducer.Configurations;
+
+public class AppSettings : AppSettingsBase
 {
-    public LoggingSettings Logging { get; set; } = new();
-    public RabbitMQSettings RabbitMQ { get; set; } = new();
-    public string AllowedHosts { get; set; } = "*";
 }
