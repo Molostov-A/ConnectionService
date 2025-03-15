@@ -28,7 +28,14 @@ public class UserConnectionHandler : MessageHandler<UserConnectionMessage>
             var connectionRequest = JsonSerializer.Deserialize<UserConnectionMessage>(message);
             if (connectionRequest == null)
             {
-                await messageSender.SendResponseAsync(correlationId, "Error: failed to deserialize the message.");
+                var response = new ResponseResult()
+                {
+                    Message = "Error: failed to deserialize the message.",
+                    Result = null,
+                    Success = false
+                };
+                string errorResponse = JsonSerializer.Serialize(response, _options);
+                await messageSender.SendResponseAsync(correlationId, errorResponse);
                 return;
             }
 
@@ -42,14 +49,13 @@ public class UserConnectionHandler : MessageHandler<UserConnectionMessage>
 
                 var result = await dataService.SaveConnectionAsync(userId, address, protocol);
 
-                var response = new
+                var response = new ResponseResult()
                 {
                     Message = "Connection saved successfully",
-                    UserId = result.UserId,
-                    IpAddress = result.IpAddress.Address,
-                    Protocol = result.IpAddress.Protocol,
-                    ConnectedAt = result.ConnectedAt
+                    Result = result,
+                    Success = true
                 };
+
 
                 string responseJson = JsonSerializer.Serialize(response, _options);
                 await messageSender.SendResponseAsync(correlationId, responseJson);
@@ -57,7 +63,13 @@ public class UserConnectionHandler : MessageHandler<UserConnectionMessage>
         }
         catch (Exception ex)
         {
-            string errorResponse = JsonSerializer.Serialize(new { Error = ex.Message });
+            var response = new ResponseResult()
+            {
+                Message = ex.Message,
+                Result = ex,
+                Success = false
+            };
+            string errorResponse = JsonSerializer.Serialize(response, _options);
             await messageSender.SendResponseAsync(correlationId, errorResponse);
         }
     }

@@ -19,19 +19,19 @@ public class UserConnectionController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> ConnectUser(long userId, [FromBody] UserConnectionRequest request)
+    public async Task<IActionResult> ConnectUser(long userId, [FromBody] string ip)
     {
-        if (string.IsNullOrWhiteSpace(request.Ip) || !IsValidIp(request.Ip))
+        if (string.IsNullOrWhiteSpace(ip) || !IsValidIp(ip))
         {
             return BadRequest(new { message = "Invalid IP address" });
         }
 
-        string protocol = GetIpProtocol(request.Ip);
+        string protocol = GetIpProtocol(ip);
 
         var message = new UserConnectionMessage
         {
             UserId = userId,
-            IpAddress = request.Ip,
+            IpAddress = ip,
             Protocol = protocol
         };
 
@@ -45,13 +45,20 @@ public class UserConnectionController : ControllerBase
         await _requestProduser.SendAsync(message, correlationId, headers);
 
         // Ожидание ответа
-        string response = null;
+        ResponseResult response = null;
         while (response == null)
         {
             response = _responsePool.GetResponse(correlationId);
             await Task.Delay(100);
         }
-        return Ok(response);
+        if (response.Success) {
+            return Ok(response);
+        }
+        else
+        {
+            return BadRequest(response);
+        }
+        
     }
 
     private bool IsValidIp(string ipAddress)

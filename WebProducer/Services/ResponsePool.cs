@@ -1,17 +1,18 @@
-﻿using RabbitMQ.Client.Events;
+﻿using MessageBrokerModelsLibrary.Models;
+using RabbitMQ.Client.Events;
 using System.Collections.Concurrent;
 
 namespace WebProducer;
 public class ResponsePool
 {
-    private readonly ConcurrentDictionary<string, string> _responses = new();
+    private readonly ConcurrentDictionary<string, ResponseResult> _responses = new();
 
-    public void AddResponse(string correlationId, string response)
+    public void AddResponse(string correlationId, ResponseResult response)
     {
         _responses[correlationId] = response;
     }
 
-    public string GetResponse(string correlationId)
+    public ResponseResult GetResponse(string correlationId)
     {
         _responses.TryGetValue(correlationId, out var response);
         return response;

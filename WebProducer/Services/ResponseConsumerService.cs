@@ -71,10 +71,12 @@ public class ResponseConsumerService : BackgroundService, IDisposable
             try
             {
                 var body = ea.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
+                var result = Encoding.UTF8.GetString(body);
                 var correlationId = ea.BasicProperties.CorrelationId;
 
-                _responsePool.AddResponse(correlationId, message);
+                var connectionResult = JsonSerializer.Deserialize<ResponseResult>(result);
+
+                _responsePool.AddResponse(correlationId, connectionResult);
 
                 _logger.LogInformation($"Received response with CorrelationId: {correlationId}");
 
