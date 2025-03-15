@@ -1,4 +1,5 @@
 ﻿using MessageBrokerModelsLibrary.Models;
+using System.Text;
 using WebConsumer.Services;
 
 namespace WebConsumer.Handlers
@@ -8,8 +9,15 @@ namespace WebConsumer.Handlers
         private string type = typeof(UserConnectionMessage).Name;
         public bool CanHandle(Dictionary<string, object> headers)
         {
-            // Проверка на null и наличие ключа "type"
-            return headers != null && headers.ContainsKey("type") && headers["type"].ToString() == type;
+            if (headers.ContainsKey("type") && headers != null)
+            {
+                var value = headers["type"].ToString();
+                return value == type;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         public async Task HandleAsync(string message, Dictionary<string, object> headers, string correlationId, IMessageSender messageSender)

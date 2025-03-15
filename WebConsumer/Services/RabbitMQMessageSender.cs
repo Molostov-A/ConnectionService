@@ -4,6 +4,7 @@ using RabbitMQ.Client;
 using System.Text.Json;
 using System.Text;
 using WebConsumer.Configurations;
+using System.Reflection.PortableExecutable;
 
 namespace WebConsumer.Services
 {
@@ -12,6 +13,8 @@ namespace WebConsumer.Services
         protected readonly ILogger<RabbitMQMessageSender> _logger;
         private readonly IConnection _connection;
         private readonly IChannel _channel;
+        private readonly string _exchange = "headers_exchange";
+
         private readonly AppSettings _appSettings;
         private readonly RabbitMQSettings _rabbitMqSettings;
         private readonly string _queueName;
@@ -33,7 +36,6 @@ namespace WebConsumer.Services
 
             _connection = factory.CreateConnectionAsync().Result; // Подключаемся один раз
             _channel = _connection.CreateChannelAsync().Result;
-            _channel.ExchangeDeclareAsync(exchange: "headers_exchange", type: ExchangeType.Headers);
 
             _channel.QueueDeclareAsync(
                 queue: _queueName,
@@ -45,12 +47,13 @@ namespace WebConsumer.Services
 
         public async Task SendResponseAsync(string correlationId, string response)
         {
+
             var properties = new BasicProperties();
             properties.CorrelationId = correlationId;
             var body = Encoding.UTF8.GetBytes(response);
 
             await _channel.BasicPublishAsync(
-                exchange: "headers_exchange",
+                exchange: "",
                 routingKey: _queueName,
                 mandatory: true,
                 basicProperties: properties,
