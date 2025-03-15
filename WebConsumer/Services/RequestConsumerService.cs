@@ -89,20 +89,34 @@ public class RequestConsumerService : BackgroundService, IDisposable
 );
                 _logger.LogWarning("Вызов обработчиков.");
 
+                bool handled = false;
+
                 // Вызов подходящего обработчика
                 foreach (var handler in _handlers)
                 {
                     if (handler.CanHandle(convertedHeaders))
                     {
                         await handler.HandleAsync(message, convertedHeaders, correlationId, _messageSender);
+                        handled = true;
                         break;
                     }
+                }
+
+                if (handled)
+                {
+                    await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
+                }
+                else
+                {
+                    _logger.LogWarning("⚠ Сообщение не обработано ни одним обработчиком.");
+                    await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false);
                 }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"❌ Ошибка обработки сообщения: {ex.Message}");
+                await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true);
             }
         };
 

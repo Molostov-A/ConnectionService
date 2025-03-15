@@ -16,7 +16,6 @@ public class ResponseConsumerService : BackgroundService, IDisposable
 
     private IConnection _connection;
     private IChannel _channel;
-    private readonly string _exchange = "headers_exchange";
 
     private ResponsePool _responsePool;
     
@@ -78,10 +77,13 @@ public class ResponseConsumerService : BackgroundService, IDisposable
                 _responsePool.AddResponse(correlationId, message);
 
                 _logger.LogInformation($"Received response with CorrelationId: {correlationId}");
+
+                await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message, "Ошибка обработки сообщения");
+                await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true);
             }
         };
 
