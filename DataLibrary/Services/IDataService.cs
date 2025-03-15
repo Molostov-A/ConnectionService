@@ -4,6 +4,6 @@ namespace CommonData.Services;
 
 public interface IDataService
 {
-    Task<object> SaveConnectionAsync(long userId, string address, string protocol);
+    Task<Connection> SaveConnectionAsync(long userId, string address, string protocol);
 
 }

@@ -1,33 +1,58 @@
-﻿using MessageBrokerModelsLibrary.Models;
+﻿using CommonData.Services;
+using MessageBrokerModelsLibrary.Models;
+using System.Text.Json;
 using WebConsumer.Interfaces;
 
-namespace WebConsumer.Handlers
+namespace WebConsumer.Handlers;
+
+public class UserConnectionHandler : MessageHandler<UserConnectionMessage>
 {
-    public class UserConnectionHandler : IMessageHandler
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+
+    public UserConnectionHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        private string type = typeof(UserConnectionMessage).Name;
-        public bool CanHandle(Dictionary<string, object> headers)
+        _serviceScopeFactory = serviceScopeFactory;
+    }
+
+    public override async Task HandleAsync(string message, Dictionary<string, object> headers, string correlationId, IResponseProduser messageSender)
+    {
+        try
         {
-            if (headers.ContainsKey("type") && headers != null)
+            var connectionRequest = JsonSerializer.Deserialize<UserConnectionMessage>(message);
+            if (connectionRequest == null)
             {
-                var value = headers["type"].ToString();
-                return value == type;
+                await messageSender.SendResponseAsync(correlationId, "Ошибка: не удалось десериализовать сообщение.");
+                return;
             }
-            else
+
+            long userId = connectionRequest.UserId;
+            string address = connectionRequest.IpAddress;
+            string protocol = connectionRequest.Protocol;
+
+            using (var scope = _serviceScopeFactory.CreateScope())
             {
-                return false;
+                var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
+
+                var result = await dataService.SaveConnectionAsync(userId, address, protocol);
+
+                var response = new
+                {
+                    Message = "Соединение успешно сохранено",
+                    UserId = result.UserId,
+                    IpAddress = result.IpAddress.Address,
+                    Protocol = result.IpAddress.Protocol,
+                    ConnectedAt = result.ConnectedAt
+                };
+
+                string responseJson = JsonSerializer.Serialize(response);
+                await messageSender.SendResponseAsync(correlationId, responseJson);
             }
         }
-
-        public async Task HandleAsync(string message, Dictionary<string, object> headers, string correlationId, IResponseProduser messageSender)
+        catch (Exception ex)
         {
-            // Логика обработки
-            await Task.Delay(100); // Имитация асинхронной обработки
-            var response = $"Processed by {type} Handler: {message}";
-
-
-            // Отправка результата обработки
-            await messageSender.SendResponseAsync(correlationId, response);
+            string errorResponse = JsonSerializer.Serialize(new { Error = ex.Message });
+            await messageSender.SendResponseAsync(correlationId, errorResponse);
         }
     }
 }
+
