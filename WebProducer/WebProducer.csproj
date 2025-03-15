@@ -12,7 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MessageBrokerToolkit\MessageBrokerToolkit.csproj" />
     <ProjectReference Include="..\ModelsLibrary\MessageBrokerModelsLibrary.csproj" />
   </ItemGroup>
 

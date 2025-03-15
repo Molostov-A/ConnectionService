@@ -2,9 +2,9 @@
 using CommonData.Services;
 using DataLibrary;
 using Microsoft.EntityFrameworkCore;
-using WebConsumer;
 using WebConsumer.Configurations;
 using WebConsumer.Handlers;
+using WebConsumer.Interfaces;
 using WebConsumer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,15 +22,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<IDataService, DataService>();
 
 // Регистрация сервиса для отправки сообщений
-builder.Services.AddSingleton<IMessageSender, RabbitMQMessageSender>();
+builder.Services.AddSingleton<IResponseProduser, ResponseProduserService>();
 
 // Регистрация обработчиков
-builder.Services.AddSingleton<IMessageHandler, TypeAHandler>();
-builder.Services.AddSingleton<IMessageHandler, TypeBHandler>();
 builder.Services.AddSingleton<IMessageHandler, UserConnectionHandler>();
 
-// Регистрация ConsumerBackgroundService
-builder.Services.AddHostedService<ConsumerBackgroundService>();
+// Регистрация сервиса, который слушает брокер на запросы
+builder.Services.AddHostedService<RequestConsumerService>();
 
 // Добавление поддержки контроллеров
 builder.Services.AddControllers();

@@ -2,10 +2,7 @@
 using MessageBrokerModelsLibrary.Models;
 using System.Net;
 using System.Net.Sockets;
-using Microsoft.Extensions.Options;
-using WebProducer.Configurations;
 using WebProducer;
-using MessageBrokerToolkit.Interfaces;
 using WebProducer.Interfaces;
 
 [ApiController]

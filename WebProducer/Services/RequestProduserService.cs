@@ -1,19 +1,16 @@
 ﻿using MessageBrokerModelsLibrary.Configurations;
-using MessageBrokerToolkit.Interfaces;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
-using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Text.Json;
 using WebProducer.Configurations;
 using WebProducer.Interfaces;
 
 namespace WebProducer.Services;
-public class RequestProduser : IRequestProduser, IDisposable
+public class RequestProduserService : IRequestProduser, IDisposable
 
 {
-    protected readonly ILogger<RequestProduser> _logger;
+    protected readonly ILogger<RequestProduserService> _logger;
     private readonly IConnection _connection;
     private readonly IChannel _channel;
     private readonly string _exchange = "headers_exchange";
@@ -24,7 +21,7 @@ public class RequestProduser : IRequestProduser, IDisposable
 
 
 
-    public RequestProduser(IOptions<AppSettings> appSettings, ILogger<RequestProduser> logger)
+    public RequestProduserService(IOptions<AppSettings> appSettings, ILogger<RequestProduserService> logger)
     {
         _logger = logger;
         _appSettings = appSettings.Value;

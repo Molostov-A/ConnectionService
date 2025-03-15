@@ -1,20 +1,16 @@
 ﻿using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
 using System.Text;
-using CommonData.Services;
 using WebConsumer.Configurations;
 using Microsoft.Extensions.Options;
-using System.Text.Json;
-using MessageBrokerModelsLibrary.Models;
-using System.Runtime.CompilerServices;
-using MessageBrokerToolkit.Interfaces;
 using MessageBrokerModelsLibrary.Configurations;
+using WebConsumer.Interfaces;
 
 namespace WebConsumer.Services;
 
-public class ConsumerBackgroundService : BackgroundService, IDisposable
+public class RequestConsumerService : BackgroundService, IDisposable
 {
-    private readonly ILogger<ConsumerBackgroundService> _logger;
+    private readonly ILogger<RequestConsumerService> _logger;
     private readonly AppSettings _appSettings;
     private readonly RabbitMQSettings _rabbitMqSettings;
     private readonly string _queueName;
@@ -23,9 +19,9 @@ public class ConsumerBackgroundService : BackgroundService, IDisposable
     private IChannel _channel;
 
     private readonly IEnumerable<IMessageHandler> _handlers;
-    private readonly IMessageSender _messageSender;
+    private readonly IResponseProduser _messageSender;
 
-    public ConsumerBackgroundService(IEnumerable<IMessageHandler> handlers, IMessageSender messageSender, ILogger<ConsumerBackgroundService> logger, IOptions<AppSettings> appSettings)
+    public RequestConsumerService(IEnumerable<IMessageHandler> handlers, IResponseProduser messageSender, ILogger<RequestConsumerService> logger, IOptions<AppSettings> appSettings)
     {
         _handlers = handlers;
         _messageSender = messageSender;

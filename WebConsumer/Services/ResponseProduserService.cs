@@ -4,19 +4,20 @@ using RabbitMQ.Client;
 using System.Text.Json;
 using System.Text;
 using WebConsumer.Configurations;
+using WebConsumer.Interfaces;
 
 namespace WebConsumer.Services
 {
-    public class RabbitMQMessageSender : IMessageSender, IDisposable
+    public class ResponseProduserService : IResponseProduser, IDisposable
     {
-        protected readonly ILogger<RabbitMQMessageSender> _logger;
+        protected readonly ILogger<ResponseProduserService> _logger;
         private readonly IConnection _connection;
         private readonly IChannel _channel;
         private readonly AppSettings _appSettings;
         private readonly RabbitMQSettings _rabbitMqSettings;
         private readonly string _queueName;
 
-        public RabbitMQMessageSender(IOptions<AppSettings> appSettings, ILogger<RabbitMQMessageSender> logger)
+        public ResponseProduserService(IOptions<AppSettings> appSettings, ILogger<ResponseProduserService> logger)
         {
             _logger = logger;
             _appSettings = appSettings.Value;

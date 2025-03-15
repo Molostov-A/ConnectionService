@@ -1,30 +1,30 @@
 ﻿using RabbitMQ.Client.Events;
 using RabbitMQ.Client;
 using System.Text;
-using CommonData.Services;
-using WebConsumer.Configurations;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 using System.Threading.Channels;
 using MessageBrokerModelsLibrary.Models;
+using WebProducer.Configurations;
 
-namespace WebConsumer.Services;
+namespace WebProducer.Services;
 
-public class RequestConsumer : BackgroundService, IDisposable
+public class ResponseConsumerService : BackgroundService, IDisposable
 {
-    private readonly ILogger<RequestConsumer> _logger;
+    private readonly ILogger<ResponseConsumerService> _logger;
     private readonly AppSettings _appSettings;
 
     private IConnection _connection;
     private IChannel _channel;
+    private readonly string _exchange = "headers_exchange";
 
-    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private ResponsePool _responsePool;
     
 
-    public RequestConsumer(ILogger<RequestConsumer> logger, IServiceScopeFactory serviceScopeFactory, IOptions<AppSettings> appSettings)
+    public ResponseConsumerService(ILogger<ResponseConsumerService> logger, ResponsePool responsePool, IOptions<AppSettings> appSettings)
     {
         _logger = logger;
-        _serviceScopeFactory = serviceScopeFactory;
+        _responsePool = responsePool;
         _appSettings = appSettings.Value;
         Task.Run(InitializeComponentsAsync).Wait();
     }
@@ -44,14 +44,13 @@ public class RequestConsumer : BackgroundService, IDisposable
         _connection = await factory.CreateConnectionAsync();
         _channel = await _connection.CreateChannelAsync();
 
-        await _channel.QueueDeclareAsync(queue: rabbitMq.RequestQueue,
+        await _channel.QueueDeclareAsync(queue: rabbitMq.ResponseQueue,
                                          durable: false,
                                          exclusive: false,
                                          autoDelete: false,
                                          arguments: null);
 
-        _channel.ExchangeDeclareAsync(exchange: "headers_exchange", type: ExchangeType.Headers);
-        _logger.LogInformation("✅ Подключение к RabbitMQ установлено.");
+        _logger.LogInformation("✅ Подключение к RabbitMQ для прослушивания ответов установлено.");
 
     }
 
@@ -74,26 +73,11 @@ public class RequestConsumer : BackgroundService, IDisposable
             {
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
+                var correlationId = ea.BasicProperties.CorrelationId;
 
-                var connectionRequest = JsonSerializer.Deserialize<UserConnectionMessage>(message);
+                _responsePool.AddResponse(correlationId, message);
 
-                long userId = connectionRequest.UserId;
-                string address = connectionRequest.IpAddress;
-                string protocol = connectionRequest.Protocol;
-                if (address == null || protocol == null)
-                {
-                    throw new ArgumentException("arguments is null reference");
-                }
-                // ✅ Создаём новую область видимости (scope)
-                using (var scope = _serviceScopeFactory.CreateScope())
-                {
-
-                    var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
-                    await dataService.SaveConnectionAsync(userId, address, protocol);
-                }
-
-                // Подтверждение обработки сообщения
-                await _channel.BasicAckAsync(ea.DeliveryTag, false);
+                _logger.LogInformation($"Received response with CorrelationId: {correlationId}");
             }
             catch (Exception ex)
             {
@@ -101,7 +85,7 @@ public class RequestConsumer : BackgroundService, IDisposable
             }
         };
 
-        await _channel.BasicConsumeAsync(queue: _appSettings.RabbitMQ.RequestQueue, autoAck: false, consumer: consumer);
+        await _channel.BasicConsumeAsync(queue: _appSettings.RabbitMQ.ResponseQueue, autoAck: false, consumer: consumer);
 
         while (!stoppingToken.IsCancellationRequested)
         {
