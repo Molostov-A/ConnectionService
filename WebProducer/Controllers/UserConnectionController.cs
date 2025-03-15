@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using WebProducer;
 using WebProducer.Interfaces;
+using WebProducer.Controllers.Models;
 
 [ApiController]
 [Route("api/users/{userId}/connect")]
@@ -19,12 +20,14 @@ public class UserConnectionController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> ConnectUser(long userId, [FromBody] string ip)
+    public async Task<IActionResult> ConnectUser(long userId, [FromBody] UserConnection request)
     {
-        if (string.IsNullOrWhiteSpace(ip) || !IsValidIp(ip))
+        if (request == null || !IsValidIp(request.ip))
         {
             return BadRequest(new { message = "Invalid IP address" });
         }
+
+        string ip = request.ip;
 
         string protocol = GetIpProtocol(ip);
 
@@ -52,7 +55,7 @@ public class UserConnectionController : ControllerBase
             await Task.Delay(100);
         }
         if (response.Success) {
-            return Ok(response);
+            return Ok(response.Result);
         }
         else
         {
