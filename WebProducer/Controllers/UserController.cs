@@ -7,19 +7,20 @@ using WebProducer.Interfaces;
 using WebProducer.Controllers.Models;
 
 [ApiController]
-[Route("api/users/{userId}/connect")]
-public class UserConnectionController : ControllerBase
+[Route("api/users")]
+public class UserController : ControllerBase
 {
     private readonly IRequestProduser _requestProduser;
     private readonly ResponsePool _responsePool;
 
-    public UserConnectionController(IRequestProduser requestProduser, ResponsePool responsePool)
+    public UserController(IRequestProduser requestProduser, ResponsePool responsePool)
     {
         _requestProduser = requestProduser;
         _responsePool = responsePool;
     }
 
     [HttpPost]
+    [Route("{userId}/connect")]
     public async Task<IActionResult> ConnectUser(long userId, [FromBody] UserConnection request)
     {
         if (request == null || !IsValidIp(request.ip))
@@ -79,4 +80,45 @@ public class UserConnectionController : ControllerBase
         }
         return "Invalid";
     }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> SearchUsersByIpPart([FromQuery] string ipPart, [FromQuery] string ipVersion)
+    {
+        //if (string.IsNullOrEmpty(ipPart) || string.IsNullOrEmpty(ipVersion))
+        //{
+        //    return BadRequest(new { message = "Both ipPart and ipVersion are required" });
+        //}
+
+        //// Логика поиска пользователей по ipPart и ipVersion
+        //var users = await _requestProduser.SearchUsersByIp(ipPart, ipVersion);
+
+        //if (users != null)
+        //{
+        //    return Ok(users);
+        //}
+        //else
+        //{
+        //    return NotFound(new { message = "No users found with the specified IP part and version" });
+        //}
+
+        return Ok();
+    }
+
+    [HttpGet("{userId}/ips")]
+    public async Task<IActionResult> GetUserIps(long userId)
+    {
+        //var ips = await _requestProduser.GetUserIps(userId);
+
+        //if (ips != null && ips.Any())
+        //{
+        //    return Ok(ips);
+        //}
+        //else
+        //{
+        //    return NotFound(new { message = "No IP addresses found for this user" });
+        //}
+
+        return Ok();
+    }
+
 }
