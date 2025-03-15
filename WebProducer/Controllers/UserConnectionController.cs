@@ -41,8 +41,7 @@ public class UserConnectionController : ControllerBase
         var type = typeof(UserConnectionMessage).Name;
         var headers = new Dictionary<string, object>
         {
-            { "type",  type},
-            { "format", "json" }
+            { "type",  type}
         };
 
         var correlationId = Guid.NewGuid().ToString();

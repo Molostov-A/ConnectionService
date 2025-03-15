@@ -16,14 +16,20 @@ public class RequestProduser : IRequestProduser, IDisposable
     protected readonly ILogger<RequestProduser> _logger;
     private readonly IConnection _connection;
     private readonly IChannel _channel;
+    private readonly string _exchange = "headers_exchange";
+
     private readonly AppSettings _appSettings;
     private readonly RabbitMQSettings _rabbitMqSettings;
+    private readonly string _queueName;
+
+
 
     public RequestProduser(IOptions<AppSettings> appSettings, ILogger<RequestProduser> logger)
     {
         _logger = logger;
         _appSettings = appSettings.Value;
         _rabbitMqSettings = _appSettings.RabbitMQ;
+        _queueName = _appSettings.RabbitMQ.RequestQueue;
 
         var factory = new ConnectionFactory
         {
@@ -35,10 +41,10 @@ public class RequestProduser : IRequestProduser, IDisposable
 
         _connection = factory.CreateConnectionAsync().Result; // Подключаемся один раз
         _channel = _connection.CreateChannelAsync().Result;
-        _channel.ExchangeDeclareAsync(exchange: "headers_exchange", type: ExchangeType.Headers);
+        _channel.ExchangeDeclareAsync(exchange: _exchange, type: ExchangeType.Headers).Wait();
 
         _channel.QueueDeclareAsync(
-            queue: _appSettings.RabbitMQ.RequestQueue,
+            queue: _queueName,
             durable: false,
             exclusive: false,
             autoDelete: false,
@@ -53,16 +59,21 @@ public class RequestProduser : IRequestProduser, IDisposable
 
     public async Task SendAsync(string message, string correlationId, Dictionary<string, object> headers)
     {
+        await _channel.QueueBindAsync(
+            queue: _queueName,
+            exchange: _exchange,
+            routingKey: string.Empty, // В headers exchange routing key не нужен
+            arguments: headers);
+
         var body = Encoding.UTF8.GetBytes(message);
         var properties = new BasicProperties();
         properties.ContentType = "text/plain";
-        properties.DeliveryMode = (DeliveryModes)2;
         properties.CorrelationId = correlationId;
         properties.Headers = headers;
 
         await _channel.BasicPublishAsync(
-            exchange: "headers_exchange",
-            routingKey: _appSettings.RabbitMQ.RequestQueue,
+            exchange: _exchange,
+            routingKey: _queueName,
             mandatory: true,
             basicProperties: properties,
             body: body);

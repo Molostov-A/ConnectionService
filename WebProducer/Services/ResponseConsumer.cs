@@ -16,6 +16,7 @@ public class ResponseConsumer : BackgroundService, IDisposable
 
     private IConnection _connection;
     private IChannel _channel;
+    private readonly string _exchange = "headers_exchange";
 
     private ResponsePool _responsePool;
     
@@ -49,7 +50,6 @@ public class ResponseConsumer : BackgroundService, IDisposable
                                          autoDelete: false,
                                          arguments: null);
 
-        await _channel.ExchangeDeclareAsync(exchange: "headers_exchange", type: ExchangeType.Headers);
         _logger.LogInformation("✅ Подключение к RabbitMQ для прослушивания ответов установлено.");
 
     }
