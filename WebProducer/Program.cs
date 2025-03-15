@@ -1,14 +1,16 @@
+using WebProducer;
 using WebProducer.Configurations;
-using IConsumerServiceMBT = MessageBrokerToolkit.Interfaces.IConsumerServiceMBT;
-using IProduserServiceMBT = MessageBrokerToolkit.Interfaces.IProduserServiceMBT;
+using WebProducer.Interfaces;
+using WebProducer.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<AppSettings>(builder.Configuration);
 
-builder.Services.AddScoped<IProduserServiceMBT, MessageBrokerToolkit.Services.ProduserServiceMBT<AppSettings>>();
-builder.Services.AddScoped<IConsumerServiceMBT, MessageBrokerToolkit.Services.ConsumerServiceMBT<AppSettings>>();
+builder.Services.AddScoped<IRequestProduser, RequestProduser>();
+builder.Services.AddSingleton<ResponsePool>();
+builder.Services.AddHostedService<ResponseConsumer>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

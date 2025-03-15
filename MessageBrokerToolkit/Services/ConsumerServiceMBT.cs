@@ -24,7 +24,10 @@ public class ConsumerServiceMBT<TAppSettings> : IConsumerServiceMBT, IDisposable
     {
         _appSettings = appSettings.Value;
         _rabbitMqSettings = _appSettings.RabbitMQ;
-        _pendingRequests = new Dictionary<string, TaskCompletionSource<string>>();        
+        _pendingRequests = new Dictionary<string, TaskCompletionSource<string>>();
+        _logger = logger;
+        
+        Task.Run(InitializeComponentsAsync).Wait(); // Инициализируем соединение с RabbitMQ
     }
 
     protected async Task InitializeComponentsAsync()
@@ -40,21 +43,13 @@ public class ConsumerServiceMBT<TAppSettings> : IConsumerServiceMBT, IDisposable
 
         _connection = await factory.CreateConnectionAsync();
         _channel = await _connection.CreateChannelAsync();
-
+        
         _logger.LogInformation("✅ Подключение к RabbitMQ установлено.");
 
     }
 
     public virtual async Task StartConsumingAsync(string queue)
     {
-        await InitializeComponentsAsync();
-
-        await _channel.QueueDeclareAsync(
-            queue: queue,
-            durable: false,
-            exclusive: false,
-            autoDelete: false,
-            arguments: null);
 
         var consumer = new AsyncEventingBasicConsumer(_channel);
         consumer.ReceivedAsync += async (model, ea) =>

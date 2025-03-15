@@ -2,25 +2,23 @@
 using MessageBrokerModelsLibrary.Models;
 using System.Net;
 using System.Net.Sockets;
-using WebProducer.Services;
-using IConsumerServiceMBT = MessageBrokerToolkit.Interfaces.IConsumerServiceMBT;
-using IProduserServiceMBT = MessageBrokerToolkit.Interfaces.IProduserServiceMBT;
 using Microsoft.Extensions.Options;
 using WebProducer.Configurations;
+using WebProducer;
+using MessageBrokerToolkit.Interfaces;
+using WebProducer.Interfaces;
 
 [ApiController]
 [Route("api/users/{userId}/connect")]
 public class UserConnectionController : ControllerBase
 {
-    private readonly IProduserServiceMBT _produserService;
-    private readonly IConsumerServiceMBT _consumerService;
-    private readonly AppSettings _appSettings;
+    private readonly IRequestProduser _requestProduser;
+    private readonly ResponsePool _responsePool;
 
-    public UserConnectionController(IProduserServiceMBT produserService, IConsumerServiceMBT consumerService, IOptions<AppSettings> appSettings)
+    public UserConnectionController(IRequestProduser requestProduser, ResponsePool responsePool)
     {
-        _appSettings = appSettings.Value;
-        _produserService = produserService;
-        _consumerService = consumerService;
+        _requestProduser = requestProduser;
+        _responsePool = responsePool;
     }
 
     [HttpPost]
@@ -40,20 +38,23 @@ public class UserConnectionController : ControllerBase
             Protocol = protocol
         };
 
-        //await _produserService.SendAsync(message, correlationId);
-
-        //var response = await _consumerService.WaitForReplyAsync(correlationId);
-
-        //if (!_consumerService.IsListening)
-        //{
-        //    _consumerService.StartListening();
-        //}
+        var type = typeof(UserConnectionMessage).Name;
+        var headers = new Dictionary<string, object>
+        {
+            { "type",  type},
+            { "format", "json" }
+        };
 
         var correlationId = Guid.NewGuid().ToString();
-        await _produserService.SendAsync(request, correlationId, _appSettings.RabbitMQ.RequestQueue);
+        await _requestProduser.SendAsync(message, correlationId, headers);
 
-        await _consumerService.StartConsumingAsync(_appSettings.RabbitMQ.ResponseQueue);
-        var response = await _consumerService.WaitForResponseAsync(correlationId);
+        // Ожидание ответа
+        string response = null;
+        while (response == null)
+        {
+            response = _responsePool.GetResponse(correlationId);
+            await Task.Delay(100);
+        }
         return Ok(response);
     }
 

@@ -1,23 +1,16 @@
 
 using CommonData.Services;
 using DataLibrary;
-using MessageBrokerModelsLibrary.Configurations;
-using MessageBrokerToolkit.Interfaces;
-using MessageBrokerToolkit.Services;
 using Microsoft.EntityFrameworkCore;
+using WebConsumer;
 using WebConsumer.Configurations;
+using WebConsumer.Handlers;
 using WebConsumer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Конфигурация настроек
 builder.Services.Configure<AppSettings>(builder.Configuration);
-//builder.Services.Configure<RabbitMQSettings>(builder.Configuration.GetSection("RabbitMQ"));
-
-// Регистрация ConsumerServiceMBT для AppSettings
-builder.Services.AddScoped(typeof(ConsumerServiceMBT<AppSettings>));
-builder.Services.AddScoped<IProduserServiceMBT, ProduserServiceMBT<AppSettings>>();
-
 // Получаем строку подключения из конфигурации
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -25,11 +18,19 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
 
-builder.Services.AddScoped<IConsumerService, ConsumerService>();
-builder.Services.AddScoped<ConsumerBackgroundService>();
+// Регистрация сервиса для работы с базой данных
+builder.Services.AddScoped<IDataService, DataService>();
 
-// Регистрация Hosted Service с использованием фабрики
-builder.Services.AddHostedService<ConsumerServiceHosted>();
+// Регистрация сервиса для отправки сообщений
+builder.Services.AddSingleton<IMessageSender, RabbitMQMessageSender>();
+
+// Регистрация обработчиков
+builder.Services.AddSingleton<IMessageHandler, TypeAHandler>();
+builder.Services.AddSingleton<IMessageHandler, TypeBHandler>();
+builder.Services.AddSingleton<IMessageHandler, UserConnectionHandler>();
+
+// Регистрация ConsumerBackgroundService
+builder.Services.AddHostedService<ConsumerBackgroundService>();
 
 // Добавление поддержки контроллеров
 builder.Services.AddControllers();
