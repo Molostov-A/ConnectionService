@@ -83,15 +83,18 @@ public class RequestConsumerService : BackgroundService, IDisposable
                 var message = Encoding.UTF8.GetString(body);
                 Dictionary<string, object> headers = (Dictionary<string, object>)ea.BasicProperties.Headers;
                 var correlationId = ea.BasicProperties.CorrelationId;
-
+                var convertedHeaders = headers.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp.Value is byte[] byteArray ? Encoding.UTF8.GetString(byteArray) : kvp.Value
+);
                 _logger.LogWarning("Вызов обработчиков.");
 
                 // Вызов подходящего обработчика
                 foreach (var handler in _handlers)
                 {
-                    if (handler.CanHandle(headers))
+                    if (handler.CanHandle(convertedHeaders))
                     {
-                        await handler.HandleAsync(message, headers, correlationId, _messageSender);
+                        await handler.HandleAsync(message, convertedHeaders, correlationId, _messageSender);
                         break;
                     }
                 }
