@@ -45,7 +45,7 @@ public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
             {
                 var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
 
-                var result = await dataService.SaveConnectionAsync(userId, address, protocol);
+                var result = await dataService.SaveConnectionAsync(connectionRequest.UserId, connectionRequest.IpAddress, connectionRequest.Protocol);
 
                 var response = new ResponseResult()
                 {

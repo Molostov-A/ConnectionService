@@ -200,16 +200,16 @@ public class UserController : ControllerBase
 
     private bool IsValidIPv6Start(string segment)
     {
-        // IPv6 может начинаться с одной группы (0000-FFFF) или "::"
-        if (Regex.IsMatch(segment, @"^[0-9a-fA-F]{1,4}:$"))
+        // Поддержка "::" (сокращённого IPv6)
+        if (segment == "::" || segment.StartsWith("::"))
             return true;
 
-        // IPv6 может начинаться с нескольких групп (X:, X:X, X:X:X, X:X:X:X)
-        if (Regex.IsMatch(segment, @"^([0-9a-fA-F]{1,4}:){1,3}[0-9a-fA-F]{1,4}:$"))
+        // IPv6-группы: 1-4 шестнадцатеричных символа (частично введённые тоже допустимы)
+        if (Regex.IsMatch(segment, @"^[0-9a-fA-F]{1,4}$"))
             return true;
 
-        // "::" (сокращение для IPv6)
-        if (segment == "::")
+        // Частично введённые группы, допускающие двоеточие в конце (2001:, fe80::, 20:)
+        if (Regex.IsMatch(segment, @"^([0-9a-fA-F]{1,4}:)+[0-9a-fA-F]{0,4}$"))
             return true;
 
         return false;
