@@ -18,7 +18,7 @@ public class ConnectionsController : ControllerBase
     }
 
     [HttpGet("search")]
-    public async Task<IActionResult> SearchConnections([FromQuery] long userId, [FromQuery] string orderBy = "dateCreated", [FromQuery] string direction = "asc")
+    public async Task<IActionResult> SearchConnections([FromQuery] long userId, [FromQuery] string orderBy = "dateCreated", [FromQuery] string direction = "desc")
     {
         if (!Enum.TryParse(orderBy, true, out OrderBy convertedOrderBy))
         {
