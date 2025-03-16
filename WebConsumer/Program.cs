@@ -1,6 +1,7 @@
 
 using CommonData.Services;
 using DataLibrary;
+using MessageBrokerModelsLibrary.Models;
 using Microsoft.EntityFrameworkCore;
 using WebConsumer.Configurations;
 using WebConsumer.Handlers;
@@ -27,6 +28,7 @@ builder.Services.AddSingleton<IResponseProduser, ResponseProduserService>();
 // Регистрация обработчиков
 builder.Services.AddSingleton<IMessageHandler, ConnectUserHandler>();
 builder.Services.AddSingleton<IMessageHandler, SearchUsersByIpPartHandler>();
+builder.Services.AddSingleton<IMessageHandler, GetUserIpsHandler>();
 
 // Регистрация сервиса, который слушает брокер на запросы
 builder.Services.AddHostedService<RequestConsumerService>();
