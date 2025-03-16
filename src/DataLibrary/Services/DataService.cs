@@ -37,7 +37,8 @@ public class DataService : IDataService
             }
 
             var existingConnection = await _dbContext.Connections
-                .FirstOrDefaultAsync(c => c.UserId == user.Id && c.IpAddressId == ipAddress.Id);
+                .FirstOrDefaultAsync(c => c.UserId == user.Id && c.IpAddressId == ipAddress.Id &&
+                                          c.ConnectedAt.Date == DateTime.UtcNow.Date);
 
             if (existingConnection != null)
             {

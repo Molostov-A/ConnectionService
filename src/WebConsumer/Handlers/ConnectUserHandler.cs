@@ -8,18 +8,12 @@ namespace WebConsumer.Handlers;
 
 public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    private readonly JsonSerializerOptions _options;
+    private readonly IDataService _dataService;
 
-    public ConnectUserHandler(IServiceScopeFactory serviceScopeFactory)
+    public ConnectUserHandler(IDataService dataService)
     {
-        _serviceScopeFactory = serviceScopeFactory;
-        var _options = new JsonSerializerOptions
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            WriteIndented = false
-        };
+        _dataService = dataService;
     }
 
     public override async Task HandleAsync(string message, Dictionary<string, object> headers, string correlationId, IResponseProduser messageSender)
@@ -29,34 +23,29 @@ public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
             var connectionRequest = JsonSerializer.Deserialize<ConnectUserMessage>(message);
             if (connectionRequest == null)
             {
-                var response = new ResponseResult()
+                var errorResponseResult = new ResponseResult()
                 {
                     Message = "Error: failed to deserialize the message.",
                     Result = null,
                     Success = false
                 };
 
-                string errorResponse = JsonSerializer.Serialize(response, _options);
+                string errorResponse = JsonSerializer.Serialize(errorResponseResult);
                 await messageSender.SendResponseAsync(correlationId, errorResponse);
                 return;
             }
 
-            using (var scope = _serviceScopeFactory.CreateScope())
+            var result = await _dataService.SaveConnectionAsync(connectionRequest.UserId, connectionRequest.IpAddress, connectionRequest.Protocol);
+
+            var response = new ResponseResult()
             {
-                var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
+                Message = "Connection saved successfully.",
+                Result = result,
+                Success = true
+            };
 
-                var result = await dataService.SaveConnectionAsync(connectionRequest.UserId, connectionRequest.IpAddress, connectionRequest.Protocol);
-
-                var response = new ResponseResult()
-                {
-                    Message = "Connection saved successfully.",
-                    Result = result,
-                    Success = true
-                };
-
-                string responseJson = JsonSerializer.Serialize(response, _options);
-                await messageSender.SendResponseAsync(correlationId, responseJson);
-            }
+            string responseJson = JsonSerializer.Serialize(response);
+            await messageSender.SendResponseAsync(correlationId, responseJson);
         }
         catch (Exception ex)
         {
