@@ -51,8 +51,7 @@ CREATE INDEX IX_Connection_UserId ON Connections(UserId);
 #### Тело запроса:
 ```
 {
-    "userId": 1,
-    "ipAddress": "192.168.1.1"
+    "ip": "192.168.1.1"
 }
 ```
 Ответ:  
