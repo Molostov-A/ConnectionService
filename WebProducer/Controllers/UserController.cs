@@ -33,14 +33,14 @@ public class UserController : ControllerBase
 
         string protocol = GetIpProtocol(ip);
 
-        var message = new UserConnectionMessage
+        var message = new ConnectUserMessage
         {
             UserId = userId,
             IpAddress = ip,
             Protocol = protocol
         };
 
-        var type = typeof(UserConnectionMessage).Name;
+        var type = typeof(ConnectUserMessage).Name;
         var headers = new Dictionary<string, object>
         {
             { "type",  type}
@@ -81,30 +81,41 @@ public class UserController : ControllerBase
 
         protocol = NormalizeIpProtocol(protocol);      
 
-        if (!IsValidIpFragment(ipPart, protocol))
+        if (!IsValidIpStart(ipPart, protocol))
         {
             return BadRequest(new { message = "Invalid ipPart or ipPart does not match the protocol type" });
         }
 
-        var message = new IpMessage()
+        var message = new SearchUsersByIpPartMessage()
         {
             Ip = ipPart,
             Protocol = protocol
         };
 
-        //// Логика поиска пользователей по ipPart и protocol
-        //var users = await _requestProduser.SearchUsersByIp(ipPart, protocol);
+        var type = typeof(SearchUsersByIpPartMessage).Name;
+        var headers = new Dictionary<string, object>
+        {
+            { "type",  type}
+        };
 
-        //if (users != null)
-        //{
-        //    return Ok(users);
-        //}
-        //else
-        //{
-        //    return NotFound(new { message = "No users found with the specified IP part and version" });
-        //}
+        var correlationId = Guid.NewGuid().ToString();
+        await _requestProduser.SendAsync(message, correlationId, headers);
 
-        return Ok(message);
+        // Ожидание ответа
+        ResponseResult response = null;
+        while (response == null)
+        {
+            response = _responsePool.GetResponse(correlationId);
+            await Task.Delay(100);
+        }
+        if (response.Success)
+        {
+            return Ok(response.Result);
+        }
+        else
+        {
+            return BadRequest(response);
+        }
     }
 
 
@@ -158,23 +169,23 @@ public class UserController : ControllerBase
         };
     }
 
-    private bool IsValidIpFragment(string segment, string protocol)
+    private bool IsValidIpStart(string segment, string protocol)
     {
         if (protocol.Equals("IPv4", StringComparison.OrdinalIgnoreCase))
         {
-            return IsValidIPv4Fragment(segment);
+            return IsValidIPv4Start(segment);
         }
         else if (protocol.Equals("IPv6", StringComparison.OrdinalIgnoreCase))
         {
-            return IsValidIPv6Fragment(segment);
+            return IsValidIPv6Start(segment);
         }
         return false;
     }
 
-    private bool IsValidIPv4Fragment(string segment)
+    private bool IsValidIPv4Start(string segment)
     {
-        // Проверка, что это либо одно число (0-255), либо несколько октетов (X.X.X)
-        if (Regex.IsMatch(segment, @"^(\d{1,3}\.){0,2}\d{1,3}$"))
+        // Проверка: сегмент должен быть началом IPv4 (X, X.X, X.X.X)
+        if (Regex.IsMatch(segment, @"^\d{1,3}(\.\d{1,3}){0,2}$"))
         {
             string[] parts = segment.Split('.');
             foreach (var part in parts)
@@ -187,21 +198,17 @@ public class UserController : ControllerBase
         return false;
     }
 
-    private bool IsValidIPv6Fragment(string segment)
+    private bool IsValidIPv6Start(string segment)
     {
-        // Проверка на один блок (0000-FFFF)
-        if (Regex.IsMatch(segment, @"^[0-9a-fA-F]{1,4}$"))
+        // IPv6 может начинаться с одной группы (0000-FFFF) или "::"
+        if (Regex.IsMatch(segment, @"^[0-9a-fA-F]{1,4}:$"))
             return true;
 
-        // Проверка на несколько блоков IPv6 (X:X, X:X:X, X:X:X:X)
-        if (Regex.IsMatch(segment, @"^([0-9a-fA-F]{1,4}:){0,3}[0-9a-fA-F]{1,4}$"))
+        // IPv6 может начинаться с нескольких групп (X:, X:X, X:X:X, X:X:X:X)
+        if (Regex.IsMatch(segment, @"^([0-9a-fA-F]{1,4}:){1,3}[0-9a-fA-F]{1,4}:$"))
             return true;
 
-        // Исправленная проверка на "::" и "fe80::" (или другие аналогичные)
-        if (Regex.IsMatch(segment, @"^([0-9a-fA-F]{1,4}::)$"))
-            return true;
-
-        // Проверка на "::" (сокращение IPv6)
+        // "::" (сокращение для IPv6)
         if (segment == "::")
             return true;
 

@@ -61,4 +61,58 @@ public class DataService : IDataService
         }
     }
 
+    public async Task<List<long>> GetUsersByIpAsync(string ipPart, string protocol)
+    {
+        return await _dbContext.Connections
+            .OrderBy(c => c.IpAddress.Protocol) // Сортировка по протоколу
+            .Where(c => c.IpAddress.Address.StartsWith(ipPart) && c.IpAddress.Protocol == protocol)
+            .Select(c => c.UserId)
+            .Distinct()
+            .ToListAsync();
+    }
+
+    public async Task<List<string>> GetUserIpsAsync(long userId)
+    {
+        return await _dbContext.Connections
+            .Where(c => c.UserId == userId)
+            .Select(c => c.IpAddress.Address)
+            .ToListAsync();
+    }
+
+    public async Task<Connection> GetLatestConnectionAsync(long userId, string orderBy, string direction)
+    {
+        var query = _dbContext.Connections.AsQueryable();
+
+        // Применяем фильтрацию по userId
+        query = query.Where(c => c.UserId == userId);
+
+        // Применяем сортировку в зависимости от параметров
+        if (orderBy == "connected_at")
+        {
+            query = direction.ToLower() == "asc"
+                ? query.OrderBy(c => c.ConnectedAt)
+                : query.OrderByDescending(c => c.ConnectedAt);
+        }
+        else if (orderBy == "ip_address_id")
+        {
+            query = direction.ToLower() == "asc"
+                ? query.OrderBy(c => c.IpAddressId)
+                : query.OrderByDescending(c => c.IpAddressId);
+        }
+        else if (orderBy == "user_id")
+        {
+            query = direction.ToLower() == "asc"
+                ? query.OrderBy(c => c.UserId)
+                : query.OrderByDescending(c => c.UserId);
+        }
+        else
+        {
+            throw new ArgumentException("Invalid orderBy value");
+        }
+
+        // Получаем только одну запись, которая будет крайним подключением
+        return await query.FirstOrDefaultAsync();
+    }
+
+
 }

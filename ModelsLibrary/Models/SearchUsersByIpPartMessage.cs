@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MessageBrokerModelsLibrary.Models;
 
-public class IpMessage
+public class SearchUsersByIpPartMessage
 {
     public string Ip {  get; set; }
     public string Protocol { get; set; }

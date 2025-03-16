@@ -25,7 +25,8 @@ builder.Services.AddScoped<IDataService, DataService>();
 builder.Services.AddSingleton<IResponseProduser, ResponseProduserService>();
 
 // Регистрация обработчиков
-builder.Services.AddSingleton<IMessageHandler, UserConnectionHandler>();
+builder.Services.AddSingleton<IMessageHandler, ConnectUserHandler>();
+builder.Services.AddSingleton<IMessageHandler, SearchUsersByIpPartHandler>();
 
 // Регистрация сервиса, который слушает брокер на запросы
 builder.Services.AddHostedService<RequestConsumerService>();
