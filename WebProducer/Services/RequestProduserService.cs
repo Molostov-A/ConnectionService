@@ -59,7 +59,7 @@ public class RequestProduserService : IRequestProduser, IDisposable
         await _channel.QueueBindAsync(
             queue: _queueName,
             exchange: _exchange,
-            routingKey: string.Empty, // В headers exchange routing key не нужен
+            routingKey: string.Empty,
             arguments: headers);
 
         var body = Encoding.UTF8.GetBytes(message);
@@ -75,7 +75,7 @@ public class RequestProduserService : IRequestProduser, IDisposable
             basicProperties: properties,
             body: body);
 
-        _logger.LogInformation($"Sent message with headers: {string.Join(", ", headers)}");
+        //_logger.LogInformation($"Sent message with headers: {string.Join(", ", headers)}");
     }
 
     public void Dispose()

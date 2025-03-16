@@ -13,7 +13,6 @@ namespace WebConsumer.Services
         protected readonly ILogger<ResponseProduserService> _logger;
         private readonly IConnection _connection;
         private readonly IChannel _channel;
-        private readonly string _exchange = "headers_exchange";
 
         private readonly AppSettings _appSettings;
         private readonly RabbitMQSettings _rabbitMqSettings;
@@ -59,7 +58,7 @@ namespace WebConsumer.Services
                 basicProperties: properties,
                 body: body);
 
-            _logger.LogInformation($"Sent response with CorrelationId: {correlationId}");
+            //_logger.LogInformation($"Sent response with CorrelationId: {correlationId}");
         }
 
         public void Dispose()

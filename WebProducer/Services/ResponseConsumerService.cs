@@ -49,7 +49,7 @@ public class ResponseConsumerService : BackgroundService, IDisposable
                                          autoDelete: false,
                                          arguments: null);
 
-        _logger.LogInformation("✅ Подключение к RabbitMQ для прослушивания ответов установлено.");
+        //_logger.LogInformation("✅ Подключение к RabbitMQ для прослушивания ответов установлено.");
 
     }
 
@@ -58,11 +58,11 @@ public class ResponseConsumerService : BackgroundService, IDisposable
 
         if (_channel == null)
         {
-            _logger.LogError("❌ _channel не инициализирован.");
+            //_logger.LogError("❌ _channel не инициализирован.");
             return;
         }
 
-        _logger.LogInformation("Consumer запущен, ожидаю сообщения...");
+        //_logger.LogInformation("Consumer запущен, ожидаю сообщения...");
 
         var consumer = new AsyncEventingBasicConsumer(_channel);
 
@@ -78,13 +78,13 @@ public class ResponseConsumerService : BackgroundService, IDisposable
 
                 _responsePool.AddResponse(correlationId, connectionResult);
 
-                _logger.LogInformation($"Received response with CorrelationId: {correlationId}");
+                //_logger.LogInformation($"Received response with CorrelationId: {correlationId}");
 
                 await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message, "Ошибка обработки сообщения");
+                //_logger.LogError(ex.Message, "Ошибка обработки сообщения");
                 await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true);
             }
         };

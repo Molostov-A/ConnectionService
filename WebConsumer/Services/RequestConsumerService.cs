@@ -54,7 +54,7 @@ public class RequestConsumerService : BackgroundService, IDisposable
                                          arguments: null);
 
         await _channel.ExchangeDeclareAsync(exchange: "headers_exchange", type: ExchangeType.Headers);
-        _logger.LogInformation("✅ Подключение к RabbitMQ для прослушивания ЗАПРОСОВ установлено.");
+        //_logger.LogInformation("✅ Подключение к RabbitMQ для прослушивания ЗАПРОСОВ установлено.");
 
     }
 
@@ -62,11 +62,11 @@ public class RequestConsumerService : BackgroundService, IDisposable
     {
         if (_channel == null)
         {
-            _logger.LogError("❌ _channel не инициализирован.");
+            //_logger.LogError("❌ _channel не инициализирован.");
             return;
         }
 
-        _logger.LogInformation("Consumer запущен, ожидаю сообщения...");
+        //_logger.LogInformation("Consumer запущен, ожидаю сообщения...");
 
         var consumer = new AsyncEventingBasicConsumer(_channel);
         consumer.ReceivedAsync += async (model, ea) =>
@@ -75,7 +75,7 @@ public class RequestConsumerService : BackgroundService, IDisposable
             {
                 if (ea == null)
                 {
-                    _logger.LogWarning("❌ Получено некорректное сообщение.");
+                    //_logger.LogWarning("❌ Получено некорректное сообщение.");
                     return;
                 }
 
@@ -87,7 +87,7 @@ public class RequestConsumerService : BackgroundService, IDisposable
                     kvp => kvp.Key,
                     kvp => kvp.Value is byte[] byteArray ? Encoding.UTF8.GetString(byteArray) : kvp.Value
 );
-                _logger.LogWarning("Вызов обработчиков.");
+                //_logger.LogWarning("Вызов обработчиков.");
 
                 bool handled = false;
 
@@ -108,14 +108,14 @@ public class RequestConsumerService : BackgroundService, IDisposable
                 }
                 else
                 {
-                    _logger.LogWarning("⚠ Сообщение не обработано ни одним обработчиком.");
+                    //_logger.LogWarning("⚠ Сообщение не обработано ни одним обработчиком.");
                     await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false);
                 }
 
             }
             catch (Exception ex)
             {
-                _logger.LogError($"❌ Ошибка обработки сообщения: {ex.Message}");
+                //_logger.LogError($"❌ Ошибка обработки сообщения: {ex.Message}");
                 await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true);
             }
         };
