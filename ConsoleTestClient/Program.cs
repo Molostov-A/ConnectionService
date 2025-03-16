@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -13,11 +14,26 @@ class Program
 
     static async Task Main()
     {
-        var tasks = new ConcurrentBag<Task>();
+        Console.Write("Введите количество запросов: ");
+        int requestCount = int.Parse(Console.ReadLine() ?? "10");
 
-        await Parallel.ForEachAsync(Enumerable.Range(0, 5), async (_, _) =>
+        Console.Write("Введите количество потоков: ");
+        int threadCount = int.Parse(Console.ReadLine() ?? "5");
+
+        Console.WriteLine("Запуск теста...");
+        var stopwatch = Stopwatch.StartNew();
+
+        await RunTestAsync(requestCount, threadCount);
+
+        stopwatch.Stop();
+        Console.WriteLine($"Все запросы отправлены! Время выполнения: {stopwatch.Elapsed.TotalSeconds:F2} секунд.");
+    }
+
+    static async Task RunTestAsync(int requestCount, int threadCount)
+    {
+        await Parallel.ForEachAsync(Enumerable.Range(0, requestCount), new ParallelOptions { MaxDegreeOfParallelism = threadCount }, async (_, _) =>
         {
-            long UserId = random.Next(1000, 100500);
+            long userId = random.Next(1000, 100500);
             int typeProtocol = random.Next(2) == 0 ? 4 : 6;
             string ip = typeProtocol == 4 ? GeneratorIp.GenerateIPv4() : GeneratorIp.GenerateIPv6();
 
@@ -27,15 +43,13 @@ class Program
 
             try
             {
-                await client.PostAsync($"{host}/api/users/{UserId}/connect", content);
+                await client.PostAsync($"{host}/api/users/{userId}/connect", content);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Ошибка при отправке запроса: {ex.Message}");
             }
         });
-
-        Console.WriteLine("All requests sent!");
     }
 }
 
@@ -54,10 +68,10 @@ public static class GeneratorIp
         var ipv6 = new StringBuilder();
         for (int i = 0; i < 8; i++)
         {
-            ipv6.Append(hexChars[random.Next(hexChars.Length)]);
-            ipv6.Append(hexChars[random.Next(hexChars.Length)]);
-            ipv6.Append(hexChars[random.Next(hexChars.Length)]);
-            ipv6.Append(hexChars[random.Next(hexChars.Length)]);
+            for (int j = 0; j < 4; j++)
+            {
+                ipv6.Append(hexChars[random.Next(hexChars.Length)]);
+            }
             if (i < 7) ipv6.Append(':');
         }
         return ipv6.ToString();
