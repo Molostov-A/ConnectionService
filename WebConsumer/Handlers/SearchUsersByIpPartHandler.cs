@@ -16,7 +16,7 @@ public class SearchUsersByIpPartHandler : MessageHandler<SearchUsersByIpPartMess
         _serviceScopeFactory = serviceScopeFactory;
         var _options = new JsonSerializerOptions
         {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // Отключает Unicode-экранирование
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             WriteIndented = false
         };
     }
@@ -48,7 +48,7 @@ public class SearchUsersByIpPartHandler : MessageHandler<SearchUsersByIpPartMess
 
                 var response = new ResponseResult()
                 {
-                    Message = "Connection saved successfully",
+                    Message = "Success",
                     Result = result,
                     Success = true
                 };

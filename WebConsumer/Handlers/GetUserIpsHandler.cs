@@ -7,11 +7,11 @@ using WebConsumer.Interfaces;
 
 namespace WebConsumer.Handlers;
 
-public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
+public class GetUserIpsHandler : MessageHandler<GetUserIpsMessage>
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
     private readonly JsonSerializerOptions _options;
-    public ConnectUserHandler(IServiceScopeFactory serviceScopeFactory)
+    public GetUserIpsHandler(IServiceScopeFactory serviceScopeFactory)
     {
         _serviceScopeFactory = serviceScopeFactory;
         var _options = new JsonSerializerOptions
@@ -25,7 +25,7 @@ public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
     {
         try
         {
-            var connectionRequest = JsonSerializer.Deserialize<ConnectUserMessage>(message);
+            var connectionRequest = JsonSerializer.Deserialize<GetUserIpsMessage>(message);
             if (connectionRequest == null)
             {
                 var response = new ResponseResult()
@@ -40,20 +40,18 @@ public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
             }
 
 
-
             using (var scope = _serviceScopeFactory.CreateScope())
             {
                 var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
 
-                var result = await dataService.SaveConnectionAsync(connectionRequest.UserId, connectionRequest.IpAddress, connectionRequest.Protocol);
+                var result = await dataService.GetUserIpsAsync(connectionRequest.IdUser);
 
                 var response = new ResponseResult()
                 {
-                    Message = "Connection saved successfully",
+                    Message = "Success",
                     Result = result,
                     Success = true
                 };
-
 
                 string responseJson = JsonSerializer.Serialize(response, _options);
                 await messageSender.SendResponseAsync(correlationId, responseJson);
