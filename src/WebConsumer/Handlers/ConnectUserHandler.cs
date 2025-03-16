@@ -56,7 +56,7 @@ public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
                 Success = false
             };
 
-            string errorResponse = JsonSerializer.Serialize(response, _options);
+            string errorResponse = JsonSerializer.Serialize(response);
             await messageSender.SendResponseAsync(correlationId, errorResponse);
         }
     }
