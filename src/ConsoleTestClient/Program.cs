@@ -13,40 +13,54 @@ public class Program
         Console.Write("Введите количество запросов: ");
         int requestCount = int.Parse(Console.ReadLine() ?? "10");
 
-        Console.Write("Введите количество потоков: ");
-        int threadCount = int.Parse(Console.ReadLine() ?? "5");
+        Console.Write("Введите минимальное userId, которое будет использоваться: ");
+        int userIdStart = int.Parse(Console.ReadLine() ?? "1000");
+
+        Console.Write("Введите максимальное userId, которое будет использоваться: ");
+        int userIdFinish = int.Parse(Console.ReadLine() ?? "10000");
 
         Console.WriteLine("Запуск теста...");
         var stopwatch = Stopwatch.StartNew();
 
-        await RunTestAsync(requestCount, threadCount);
+        await RunTestAsync(requestCount, userIdStart, userIdFinish);
 
         stopwatch.Stop();
         Console.WriteLine($"Все запросы отправлены! Время выполнения: {stopwatch.Elapsed.TotalSeconds:F2} секунд.");
         Console.ReadLine();
     }
 
-    static async Task RunTestAsync(int requestCount, int threadCount)
+    static async Task RunTestAsync(int requestCount, int userIdStart, int userIdFinish)
     {
-        await Parallel.ForEachAsync(Enumerable.Range(0, requestCount), new ParallelOptions { MaxDegreeOfParallelism = threadCount }, async (_, _) =>
+        var tasks = new List<Task>();
+
+        for (int i = 0; i < requestCount; i++)
         {
-            long userId = random.Next(1000, 100500);
-            int typeProtocol = random.Next(2) == 0 ? 4 : 6;
-            string ip = typeProtocol == 4 ? IpGenerator.GenerateIPv4() : IpGenerator.GenerateIPv6();
+            tasks.Add(SendRequestAsync(userIdStart, userIdFinish));
+        }
 
-            var request = new { Ip = ip };
-            var json = JsonSerializer.Serialize(request);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+        await Task.WhenAll(tasks);
+    }
 
-            try
-            {
-                await client.PostAsync($"{host}/api/users/{userId}/connect", content);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Ошибка при отправке запроса: {ex.Message}");
-            }
-        });
+    static async Task SendRequestAsync(int userIdStart, int userIdFinish)
+    {
+        long userId = random.Next(userIdStart, userIdFinish);
+        int typeProtocol = random.Next(2) == 0 ? 4 : 6;
+        string ip = typeProtocol == 4 ? IpGenerator.GenerateIPv4() : IpGenerator.GenerateIPv6();
+
+        var request = new { Ip = ip };
+        var json = JsonSerializer.Serialize(request);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        try
+        {
+            var response = await client.PostAsync($"{host}/api/users/{userId}/connect", content);
+            string responseBody = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Ответ [{response.StatusCode}]: {responseBody}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Ошибка при отправке запроса: {ex.Message}");
+        }
     }
 }
 
