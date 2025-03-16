@@ -1,4 +1,4 @@
-﻿namespace MessageBrokerModelsLibrary.Models;
+﻿namespace ModelsLibrary.Models;
 
 public class SearchUsersByIpPartMessage
 {

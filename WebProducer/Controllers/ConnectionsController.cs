@@ -1,4 +1,4 @@
-﻿using MessageBrokerModelsLibrary.Models;
+﻿using ModelsLibrary.Models;
 using Microsoft.AspNetCore.Mvc;
 using WebProducer;
 using WebProducer.Interfaces;

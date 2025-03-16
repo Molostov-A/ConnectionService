@@ -1,4 +1,4 @@
-﻿using MessageBrokerModelsLibrary.Models;
+﻿using ModelsLibrary.Models;
 using System.Collections.Concurrent;
 
 namespace WebProducer;

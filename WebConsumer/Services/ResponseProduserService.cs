@@ -1,4 +1,4 @@
-﻿using MessageBrokerModelsLibrary.Configurations;
+﻿using ModelsLibrary.Configurations;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using System.Text;

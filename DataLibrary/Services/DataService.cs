@@ -1,6 +1,6 @@
 ﻿using DataLibrary;
 using DataLibrary.Models;
-using MessageBrokerModelsLibrary.Models;
+using ModelsLibrary.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CommonData.Services;

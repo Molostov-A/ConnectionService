@@ -1,4 +1,4 @@
-﻿namespace MessageBrokerModelsLibrary.Configurations;
+﻿namespace ModelsLibrary.Configurations;
 
 public class LogLevelSettings
 {

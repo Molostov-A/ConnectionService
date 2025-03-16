@@ -1,4 +1,4 @@
-﻿using MessageBrokerModelsLibrary.Configurations;
+﻿using ModelsLibrary.Configurations;
 
 namespace WebProducer.Configurations;
 

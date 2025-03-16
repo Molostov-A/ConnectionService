@@ -3,7 +3,7 @@ using RabbitMQ.Client;
 using System.Text;
 using WebConsumer.Configurations;
 using Microsoft.Extensions.Options;
-using MessageBrokerModelsLibrary.Configurations;
+using ModelsLibrary.Configurations;
 using WebConsumer.Interfaces;
 
 namespace WebConsumer.Services;

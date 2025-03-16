@@ -1,5 +1,5 @@
 ﻿using DataLibrary.Models;
-using MessageBrokerModelsLibrary.Models;
+using ModelsLibrary.Models;
 
 namespace CommonData.Services;
 

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MessageBrokerModelsLibrary.Models;
+using ModelsLibrary.Models;
 using System.Net;
 using System.Net.Sockets;
 using WebProducer;
