@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using WebProducer;
 using WebProducer.Interfaces;
 using WebProducer.Controllers.Models;
+using System.Text.RegularExpressions;
 
 [ApiController]
 [Route("api/users")]
@@ -65,32 +66,34 @@ public class UserController : ControllerBase
         
     }
 
-    private bool IsValidIp(string ipAddress)
-    {
-        return IPAddress.TryParse(ipAddress, out _);
-    }
-
-    private string GetIpProtocol(string ipAddress)
-    {
-        if (IPAddress.TryParse(ipAddress, out IPAddress ip))
-        {
-            return ip.AddressFamily == AddressFamily.InterNetwork ? "IPv4" :
-                   ip.AddressFamily == AddressFamily.InterNetworkV6 ? "IPv6" :
-                   "Unknown";
-        }
-        return "Invalid";
-    }
-
     [HttpGet("search")]
-    public async Task<IActionResult> SearchUsersByIpPart([FromQuery] string ipPart, [FromQuery] string ipVersion)
+    public async Task<IActionResult> SearchUsersByIpPart([FromQuery] string ipPart, [FromQuery] string protocol)
     {
-        //if (string.IsNullOrEmpty(ipPart) || string.IsNullOrEmpty(ipVersion))
-        //{
-        //    return BadRequest(new { message = "Both ipPart and ipVersion are required" });
-        //}
+        ipPart = ipPart.Trim();
+        if (string.IsNullOrEmpty(ipPart))
+        {
+            return BadRequest(new { message = "ipPart must not be empty" });
+        }
+        if (!IsValidIpProtocol(protocol))
+        {
+            return BadRequest(new { message = "Invalid protocol type" });
+        }
 
-        //// Логика поиска пользователей по ipPart и ipVersion
-        //var users = await _requestProduser.SearchUsersByIp(ipPart, ipVersion);
+        protocol = NormalizeIpProtocol(protocol);      
+
+        if (!IsValidIpFragment(ipPart, protocol))
+        {
+            return BadRequest(new { message = "Invalid ipPart or ipPart does not match the protocol type" });
+        }
+
+        var message = new IpMessage()
+        {
+            Ip = ipPart,
+            Protocol = protocol
+        };
+
+        //// Логика поиска пользователей по ipPart и protocol
+        //var users = await _requestProduser.SearchUsersByIp(ipPart, protocol);
 
         //if (users != null)
         //{
@@ -101,8 +104,10 @@ public class UserController : ControllerBase
         //    return NotFound(new { message = "No users found with the specified IP part and version" });
         //}
 
-        return Ok();
+        return Ok(message);
     }
+
+
 
     [HttpGet("{userId}/ips")]
     public async Task<IActionResult> GetUserIps(long userId)
@@ -119,6 +124,88 @@ public class UserController : ControllerBase
         //}
 
         return Ok();
+    }
+
+    private bool IsValidIp(string ipAddress)
+    {
+        return IPAddress.TryParse(ipAddress, out _);
+    }
+
+    private string GetIpProtocol(string ipAddress)
+    {
+        if (IPAddress.TryParse(ipAddress, out IPAddress ip))
+        {
+            return ip.AddressFamily == AddressFamily.InterNetwork ? "IPv4" :
+                   ip.AddressFamily == AddressFamily.InterNetworkV6 ? "IPv6" :
+                   "Unknown";
+        }
+        return "Invalid";
+    }
+
+    private bool IsValidIpProtocol(string protocol)
+    {
+        return Regex.IsMatch(protocol, @"^ipv[46]$", RegexOptions.IgnoreCase);
+    }
+
+    private string? NormalizeIpProtocol(string protocol)
+    {
+        string lower = protocol.ToLower().Trim();
+        return lower switch
+        {
+            "ipv4" => "IPv4",
+            "ipv6" => "IPv6",
+            _ => "" // Если передан некорректный протокол, возвращаем ""
+        };
+    }
+
+    private bool IsValidIpFragment(string segment, string protocol)
+    {
+        if (protocol.Equals("IPv4", StringComparison.OrdinalIgnoreCase))
+        {
+            return IsValidIPv4Fragment(segment);
+        }
+        else if (protocol.Equals("IPv6", StringComparison.OrdinalIgnoreCase))
+        {
+            return IsValidIPv6Fragment(segment);
+        }
+        return false;
+    }
+
+    private bool IsValidIPv4Fragment(string segment)
+    {
+        // Проверка, что это либо одно число (0-255), либо несколько октетов (X.X.X)
+        if (Regex.IsMatch(segment, @"^(\d{1,3}\.){0,2}\d{1,3}$"))
+        {
+            string[] parts = segment.Split('.');
+            foreach (var part in parts)
+            {
+                if (!int.TryParse(part, out int num) || num < 0 || num > 255)
+                    return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private bool IsValidIPv6Fragment(string segment)
+    {
+        // Проверка на один блок (0000-FFFF)
+        if (Regex.IsMatch(segment, @"^[0-9a-fA-F]{1,4}$"))
+            return true;
+
+        // Проверка на несколько блоков IPv6 (X:X, X:X:X, X:X:X:X)
+        if (Regex.IsMatch(segment, @"^([0-9a-fA-F]{1,4}:){0,3}[0-9a-fA-F]{1,4}$"))
+            return true;
+
+        // Исправленная проверка на "::" и "fe80::" (или другие аналогичные)
+        if (Regex.IsMatch(segment, @"^([0-9a-fA-F]{1,4}::)$"))
+            return true;
+
+        // Проверка на "::" (сокращение IPv6)
+        if (segment == "::")
+            return true;
+
+        return false;
     }
 
 }
