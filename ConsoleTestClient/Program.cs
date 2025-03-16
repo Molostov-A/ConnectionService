@@ -27,6 +27,7 @@ class Program
 
         stopwatch.Stop();
         Console.WriteLine($"Все запросы отправлены! Время выполнения: {stopwatch.Elapsed.TotalSeconds:F2} секунд.");
+        Console.ReadLine();
     }
 
     static async Task RunTestAsync(int requestCount, int threadCount)
