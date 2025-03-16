@@ -8,12 +8,18 @@ namespace WebConsumer.Handlers;
 
 public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
 {
+    private readonly IServiceScopeFactory _serviceScopeFactory;
 
-    private readonly IDataService _dataService;
+    private readonly JsonSerializerOptions _options;
 
-    public ConnectUserHandler(IDataService dataService)
+    public ConnectUserHandler(IServiceScopeFactory serviceScopeFactory)
     {
-        _dataService = dataService;
+        _serviceScopeFactory = serviceScopeFactory;
+        var _options = new JsonSerializerOptions
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            WriteIndented = false
+        };
     }
 
     public override async Task HandleAsync(string message, Dictionary<string, object> headers, string correlationId, IResponseProduser messageSender)
@@ -23,29 +29,34 @@ public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
             var connectionRequest = JsonSerializer.Deserialize<ConnectUserMessage>(message);
             if (connectionRequest == null)
             {
-                var errorResponseResult = new ResponseResult()
+                var response = new ResponseResult()
                 {
                     Message = "Error: failed to deserialize the message.",
                     Result = null,
                     Success = false
                 };
 
-                string errorResponse = JsonSerializer.Serialize(errorResponseResult);
+                string errorResponse = JsonSerializer.Serialize(response, _options);
                 await messageSender.SendResponseAsync(correlationId, errorResponse);
                 return;
             }
 
-            var result = await _dataService.SaveConnectionAsync(connectionRequest.UserId, connectionRequest.IpAddress, connectionRequest.Protocol);
-
-            var response = new ResponseResult()
+            using (var scope = _serviceScopeFactory.CreateScope())
             {
-                Message = "Connection saved successfully.",
-                Result = result,
-                Success = true
-            };
+                var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
 
-            string responseJson = JsonSerializer.Serialize(response);
-            await messageSender.SendResponseAsync(correlationId, responseJson);
+                var result = await dataService.SaveConnectionAsync(connectionRequest.UserId, connectionRequest.IpAddress, connectionRequest.Protocol);
+
+                var response = new ResponseResult()
+                {
+                    Message = "Connection saved successfully.",
+                    Result = result,
+                    Success = true
+                };
+
+                string responseJson = JsonSerializer.Serialize(response, _options);
+                await messageSender.SendResponseAsync(correlationId, responseJson);
+            }
         }
         catch (Exception ex)
         {
@@ -56,7 +67,7 @@ public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
                 Success = false
             };
 
-            string errorResponse = JsonSerializer.Serialize(response);
+            string errorResponse = JsonSerializer.Serialize(response, _options);
             await messageSender.SendResponseAsync(correlationId, errorResponse);
         }
     }
