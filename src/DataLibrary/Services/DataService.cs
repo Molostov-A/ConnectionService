@@ -42,7 +42,7 @@ public class DataService : IDataService
 
             if (existingConnection != null)
             {
-                return existingConnection; // Возвращаем, если соединение уже существует
+                return existingConnection;
             }
 
             var connection = new Connection
@@ -66,7 +66,7 @@ public class DataService : IDataService
     public async Task<List<long>> GetUsersByIpAsync(string ipPart, string protocol)
     {
         return await _dbContext.Connections
-            .OrderBy(c => c.IpAddress.Protocol) // Сортировка по протоколу
+            .OrderBy(c => c.IpAddress.Protocol)
             .Where(c => c.IpAddress.Address.StartsWith(ipPart) && c.IpAddress.Protocol == protocol)
             .Select(c => c.UserId)
             .Distinct()

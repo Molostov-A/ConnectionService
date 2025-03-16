@@ -34,7 +34,7 @@ public class RequestProduserService : IRequestProduser, IDisposable
             Password = _rabbitMqSettings.Password
         };
 
-        _connection = factory.CreateConnectionAsync().Result; // Подключаемся один раз
+        _connection = factory.CreateConnectionAsync().Result;
         _channel = _connection.CreateChannelAsync().Result;
         _channel.ExchangeDeclareAsync(exchange: _exchange, type: ExchangeType.Headers).Wait();
 
