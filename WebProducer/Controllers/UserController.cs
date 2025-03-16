@@ -123,18 +123,35 @@ public class UserController : ControllerBase
     [HttpGet("{userId}/ips")]
     public async Task<IActionResult> GetUserIps(long userId)
     {
-        //var ips = await _requestProduser.GetUserIps(userId);
+        var message = new GetUserIpsMessage()
+        {
+            UserId = userId
+        };
 
-        //if (ips != null && ips.Any())
-        //{
-        //    return Ok(ips);
-        //}
-        //else
-        //{
-        //    return NotFound(new { message = "No IP addresses found for this user" });
-        //}
+        var type = typeof(GetUserIpsMessage).Name;
+        var headers = new Dictionary<string, object>
+        {
+            { "type",  type}
+        };
 
-        return Ok();
+        var correlationId = Guid.NewGuid().ToString();
+        await _requestProduser.SendAsync(message, correlationId, headers);
+
+        // Ожидание ответа
+        ResponseResult response = null;
+        while (response == null)
+        {
+            response = _responsePool.GetResponse(correlationId);
+            await Task.Delay(100);
+        }
+        if (response.Success)
+        {
+            return Ok(response.Result);
+        }
+        else
+        {
+            return BadRequest(response);
+        }
     }
 
     private bool IsValidIp(string ipAddress)

@@ -44,7 +44,7 @@ public class GetUserIpsHandler : MessageHandler<GetUserIpsMessage>
             {
                 var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
 
-                var result = await dataService.GetUserIpsAsync(connectionRequest.IdUser);
+                var result = await dataService.GetUserIpsAsync(connectionRequest.UserId);
 
                 var response = new ResponseResult()
                 {

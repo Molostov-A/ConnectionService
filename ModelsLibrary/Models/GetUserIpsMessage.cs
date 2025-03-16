@@ -8,6 +8,6 @@ namespace MessageBrokerModelsLibrary.Models
 {
     public class GetUserIpsMessage
     {
-        public long IdUser { get; set; }
+        public long UserId { get; set; }
     }
 }
