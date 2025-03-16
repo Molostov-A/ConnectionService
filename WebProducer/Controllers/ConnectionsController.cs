@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using WebProducer.Interfaces;
 using WebProducer;
+using MessageBrokerModelsLibrary.Models;
+using System;
 
 [ApiController]
 [Route("api/connections")]
@@ -18,29 +20,46 @@ public class ConnectionsController : ControllerBase
     [HttpGet("search")]
     public async Task<IActionResult> SearchConnections([FromQuery] long userId, [FromQuery] string orderBy = "dateCreated", [FromQuery] string direction = "asc")
     {
-        // Валидация параметров
-        //if (string.IsNullOrEmpty(orderBy) || string.IsNullOrEmpty(direction))
-        //{
-        //    return BadRequest(new { message = "Both orderBy and direction are required." });
-        //}
+        if (!Enum.TryParse(orderBy, true, out OrderBy convertedOrderBy))
+        {
+            return BadRequest(new { message = $"orderBy must equal one of the following strings: {string.Join(", ", Enum.GetNames(typeof(OrderBy)))}" });
+        }
 
-        //if (direction.ToLower() != "asc" && direction.ToLower() != "desc")
-        //{
-        //    return BadRequest(new { message = "Invalid direction. Use 'asc' or 'desc'." });
-        //}
+        if (!Enum.TryParse(direction, true, out Direction convertedDirection))
+        {
+            return BadRequest(new { message = $"direction must equal one of the following strings: {string.Join(", ", Enum.GetNames(typeof(Direction)))}" });
+        }
 
-        //// Получение подключений с сортировкой
-        //var connections = await _connectionService.SearchConnections(userId, orderBy, direction);
+        var message = new SearchConnectionsMessage()
+        {
+            Direction = convertedDirection,
+            OrderBy = convertedOrderBy,
+            UserId = userId
+        };
 
-        //if (connections != null && connections.Any())
-        //{
-        //    return Ok(connections);
-        //}
-        //else
-        //{
-        //    return NotFound(new { message = "No connections found for the specified user." });
-        //}
+        var type = typeof(SearchConnectionsMessage).Name;
+        var headers = new Dictionary<string, object>
+        {
+            { "type",  type}
+        };
 
-        return Ok();
+        var correlationId = Guid.NewGuid().ToString();
+        await _requestProduser.SendAsync(message, correlationId, headers);
+
+        // Ожидание ответа
+        ResponseResult response = null;
+        while (response == null)
+        {
+            response = _responsePool.GetResponse(correlationId);
+            await Task.Delay(100);
+        }
+        if (response.Success)
+        {
+            return Ok(response.Result);
+        }
+        else
+        {
+            return BadRequest(response);
+        }
     }
 }

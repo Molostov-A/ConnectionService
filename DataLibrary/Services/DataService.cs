@@ -1,5 +1,6 @@
 ﻿using DataLibrary;
 using DataLibrary.Models;
+using MessageBrokerModelsLibrary.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace CommonData.Services;
@@ -79,7 +80,7 @@ public class DataService : IDataService
             .ToListAsync();
     }
 
-    public async Task<Connection> GetLatestConnectionAsync(long userId, string orderBy, string direction)
+    public async Task<Connection> GetLatestConnectionAsync(long userId, OrderBy orderBy, Direction direction)
     {
         var query = _dbContext.Connections.AsQueryable();
 
@@ -87,21 +88,21 @@ public class DataService : IDataService
         query = query.Where(c => c.UserId == userId);
 
         // Применяем сортировку в зависимости от параметров
-        if (orderBy == "connected_at")
+        if (orderBy == OrderBy.dateCreated)
         {
-            query = direction.ToLower() == "asc"
+            query = direction == Direction.asc
                 ? query.OrderBy(c => c.ConnectedAt)
                 : query.OrderByDescending(c => c.ConnectedAt);
         }
-        else if (orderBy == "ip_address_id")
+        else if (orderBy == OrderBy.ipAddress)
         {
-            query = direction.ToLower() == "asc"
+            query = direction == Direction.asc
                 ? query.OrderBy(c => c.IpAddressId)
                 : query.OrderByDescending(c => c.IpAddressId);
         }
-        else if (orderBy == "user_id")
+        else if (orderBy == OrderBy.userId)
         {
-            query = direction.ToLower() == "asc"
+            query = direction == Direction.asc
                 ? query.OrderBy(c => c.UserId)
                 : query.OrderByDescending(c => c.UserId);
         }

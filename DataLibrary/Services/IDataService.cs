@@ -1,4 +1,5 @@
 ﻿using DataLibrary.Models;
+using MessageBrokerModelsLibrary.Models;
 
 namespace CommonData.Services;
 
@@ -10,6 +11,6 @@ public interface IDataService
 
     Task<List<string>> GetUserIpsAsync(long userId);
 
-    Task<Connection> GetLatestConnectionAsync(long userId, string orderBy, string direction);
+    Task<Connection> GetLatestConnectionAsync(long userId, OrderBy orderBy, Direction direction);
 
 }
