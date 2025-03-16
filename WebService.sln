@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebConsumer", "WebConsumer\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataLibrary", "DataLibrary\DataLibrary.csproj", "{B261E808-AFB2-4CC0-AA63-9D6A9D70317C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageBrokerModelsLibrary", "ModelsLibrary\MessageBrokerModelsLibrary.csproj", "{5631B69F-CDD3-483F-886F-388AAB588AB3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageBrokerModelsLibrary", "ModelsLibrary\ModelsLibrary.csproj", "{5631B69F-CDD3-483F-886F-388AAB588AB3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleTestClient", "ConsoleTestClient\ConsoleTestClient.csproj", "{AE7FBAC4-D76F-4FC7-BDED-C756EDFA122D}"
 EndProject
