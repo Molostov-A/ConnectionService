@@ -114,6 +114,4 @@ public class DataService : IDataService
         // Получаем только одну запись, которая будет крайним подключением
         return await query.FirstOrDefaultAsync();
     }
-
-
 }

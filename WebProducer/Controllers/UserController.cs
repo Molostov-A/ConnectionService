@@ -24,12 +24,12 @@ public class UserController : ControllerBase
     [Route("{userId}/connect")]
     public async Task<IActionResult> ConnectUser(long userId, [FromBody] UserConnection request)
     {
-        if (request == null || !IsValidIp(request.ip))
+        if (request == null || !IsValidIp(request.Ip))
         {
             return BadRequest(new { message = "Invalid IP address" });
         }
 
-        string ip = request.ip;
+        string ip = request.Ip;
 
         string protocol = GetIpProtocol(ip);
 
@@ -63,7 +63,6 @@ public class UserController : ControllerBase
         {
             return BadRequest(response);
         }
-        
     }
 
     [HttpGet("search")]
@@ -74,6 +73,7 @@ public class UserController : ControllerBase
         {
             return BadRequest(new { message = "ipPart must not be empty" });
         }
+
         if (!IsValidIpProtocol(protocol))
         {
             return BadRequest(new { message = "Invalid protocol type" });
@@ -108,6 +108,7 @@ public class UserController : ControllerBase
             response = _responsePool.GetResponse(correlationId);
             await Task.Delay(100);
         }
+
         if (response.Success)
         {
             return Ok(response.Result);
@@ -117,8 +118,6 @@ public class UserController : ControllerBase
             return BadRequest(response);
         }
     }
-
-
 
     [HttpGet("{userId}/ips")]
     public async Task<IActionResult> GetUserIps(long userId)
@@ -144,6 +143,7 @@ public class UserController : ControllerBase
             response = _responsePool.GetResponse(correlationId);
             await Task.Delay(100);
         }
+
         if (response.Success)
         {
             return Ok(response.Result);
@@ -167,6 +167,7 @@ public class UserController : ControllerBase
                    ip.AddressFamily == AddressFamily.InterNetworkV6 ? "IPv6" :
                    "Unknown";
         }
+
         return "Invalid";
     }
 
@@ -196,6 +197,7 @@ public class UserController : ControllerBase
         {
             return IsValidIPv6Start(segment);
         }
+
         return false;
     }
 
@@ -210,8 +212,10 @@ public class UserController : ControllerBase
                 if (!int.TryParse(part, out int num) || num < 0 || num > 255)
                     return false;
             }
+
             return true;
         }
+
         return false;
     }
 
@@ -219,17 +223,22 @@ public class UserController : ControllerBase
     {
         // Поддержка "::" (сокращённого IPv6)
         if (segment == "::" || segment.StartsWith("::"))
+        {
             return true;
+        }
 
         // IPv6-группы: 1-4 шестнадцатеричных символа (частично введённые тоже допустимы)
         if (Regex.IsMatch(segment, @"^[0-9a-fA-F]{1,4}$"))
+        {
             return true;
+        }
 
         // Частично введённые группы, допускающие двоеточие в конце (2001:, fe80::, 20:)
         if (Regex.IsMatch(segment, @"^([0-9a-fA-F]{1,4}:)+[0-9a-fA-F]{0,4}$"))
+        {
             return true;
+        }
 
         return false;
     }
-
 }

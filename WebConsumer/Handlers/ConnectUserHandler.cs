@@ -1,6 +1,5 @@
 ﻿using CommonData.Services;
 using MessageBrokerModelsLibrary.Models;
-using Microsoft.Extensions.Options;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using WebConsumer.Interfaces;
@@ -10,7 +9,9 @@ namespace WebConsumer.Handlers;
 public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
+
     private readonly JsonSerializerOptions _options;
+
     public ConnectUserHandler(IServiceScopeFactory serviceScopeFactory)
     {
         _serviceScopeFactory = serviceScopeFactory;
@@ -34,12 +35,11 @@ public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
                     Result = null,
                     Success = false
                 };
+
                 string errorResponse = JsonSerializer.Serialize(response, _options);
                 await messageSender.SendResponseAsync(correlationId, errorResponse);
                 return;
             }
-
-
 
             using (var scope = _serviceScopeFactory.CreateScope())
             {
@@ -49,11 +49,10 @@ public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
 
                 var response = new ResponseResult()
                 {
-                    Message = "Connection saved successfully",
+                    Message = "Connection saved successfully.",
                     Result = result,
                     Success = true
                 };
-
 
                 string responseJson = JsonSerializer.Serialize(response, _options);
                 await messageSender.SendResponseAsync(correlationId, responseJson);
@@ -67,6 +66,7 @@ public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
                 Result = ex,
                 Success = false
             };
+
             string errorResponse = JsonSerializer.Serialize(response, _options);
             await messageSender.SendResponseAsync(correlationId, errorResponse);
         }

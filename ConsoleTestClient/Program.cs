@@ -1,12 +1,8 @@
-﻿using System;
-using System.Diagnostics;
-using System.Net.Http;
+﻿using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
-using System.Collections.Concurrent;
 
-class Program
+public class Program
 {
     private static readonly HttpClient client = new HttpClient();
     private static readonly Random random = new Random();
@@ -36,7 +32,7 @@ class Program
         {
             long userId = random.Next(1000, 100500);
             int typeProtocol = random.Next(2) == 0 ? 4 : 6;
-            string ip = typeProtocol == 4 ? GeneratorIp.GenerateIPv4() : GeneratorIp.GenerateIPv6();
+            string ip = typeProtocol == 4 ? IpGenerator.GenerateIPv4() : IpGenerator.GenerateIPv6();
 
             var request = new { Ip = ip };
             var json = JsonSerializer.Serialize(request);
@@ -54,7 +50,7 @@ class Program
     }
 }
 
-public static class GeneratorIp
+public static class IpGenerator
 {
     private static readonly Random random = new Random();
     private const string hexChars = "0123456789abcdef";
@@ -73,8 +69,13 @@ public static class GeneratorIp
             {
                 ipv6.Append(hexChars[random.Next(hexChars.Length)]);
             }
-            if (i < 7) ipv6.Append(':');
+
+            if (i < 7)
+            {
+                ipv6.Append(':');
+            }
         }
+
         return ipv6.ToString();
     }
 }

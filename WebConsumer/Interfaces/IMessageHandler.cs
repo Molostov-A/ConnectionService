@@ -1,8 +1,8 @@
-﻿namespace WebConsumer.Interfaces
+﻿namespace WebConsumer.Interfaces;
+
+public interface IMessageHandler
 {
-    public interface IMessageHandler
-    {
-        bool CanHandle(Dictionary<string, object> headers);
-        Task HandleAsync(string message, Dictionary<string, object> headers, string correlationId, IResponseProduser messageSender);
-    }
+    bool CanHandle(Dictionary<string, object> headers);
+
+    Task HandleAsync(string message, Dictionary<string, object> headers, string correlationId, IResponseProduser messageSender);
 }

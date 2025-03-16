@@ -7,8 +7,8 @@ using WebProducer.Configurations;
 using WebProducer.Interfaces;
 
 namespace WebProducer.Services;
-public class RequestProduserService : IRequestProduser, IDisposable
 
+public class RequestProduserService : IRequestProduser, IDisposable
 {
     protected readonly ILogger<RequestProduserService> _logger;
     private readonly IConnection _connection;
@@ -18,8 +18,6 @@ public class RequestProduserService : IRequestProduser, IDisposable
     private readonly AppSettings _appSettings;
     private readonly RabbitMQSettings _rabbitMqSettings;
     private readonly string _queueName;
-
-
 
     public RequestProduserService(IOptions<AppSettings> appSettings, ILogger<RequestProduserService> logger)
     {

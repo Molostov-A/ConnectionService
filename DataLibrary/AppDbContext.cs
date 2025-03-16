@@ -6,7 +6,9 @@ namespace DataLibrary;
 public class AppDbContext : DbContext
 {
     public DbSet<User> Users { get; set; }
+
     public DbSet<IpAddress> IpAddresses { get; set; }
+
     public DbSet<Connection> Connections { get; set; }
 
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)

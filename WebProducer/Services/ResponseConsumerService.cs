@@ -1,10 +1,9 @@
-﻿using RabbitMQ.Client.Events;
-using RabbitMQ.Client;
-using System.Text;
+﻿using MessageBrokerModelsLibrary.Models;
 using Microsoft.Extensions.Options;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
+using System.Text;
 using System.Text.Json;
-using System.Threading.Channels;
-using MessageBrokerModelsLibrary.Models;
 using WebProducer.Configurations;
 
 namespace WebProducer.Services;
@@ -18,7 +17,6 @@ public class ResponseConsumerService : BackgroundService, IDisposable
     private IChannel _channel;
 
     private ResponsePool _responsePool;
-    
 
     public ResponseConsumerService(ILogger<ResponseConsumerService> logger, ResponsePool responsePool, IOptions<AppSettings> appSettings)
     {
@@ -49,8 +47,7 @@ public class ResponseConsumerService : BackgroundService, IDisposable
                                          autoDelete: false,
                                          arguments: null);
 
-        //_logger.LogInformation("✅ Подключение к RabbitMQ для прослушивания ответов установлено.");
-
+        //_logger.LogInformation("Подключение к RabbitMQ для прослушивания ответов установлено.");
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -58,7 +55,7 @@ public class ResponseConsumerService : BackgroundService, IDisposable
 
         if (_channel == null)
         {
-            //_logger.LogError("❌ _channel не инициализирован.");
+            //_logger.LogError("_channel не инициализирован.");
             return;
         }
 
@@ -97,13 +94,13 @@ public class ResponseConsumerService : BackgroundService, IDisposable
         }
     }
 
-
     public override async void Dispose()
     {
         if (_channel != null)
         {
             await _channel.CloseAsync();
         }
+
         if (_connection != null)
         {
             await _connection.CloseAsync();

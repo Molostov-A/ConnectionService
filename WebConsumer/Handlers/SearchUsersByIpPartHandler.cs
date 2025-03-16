@@ -1,6 +1,5 @@
 ﻿using CommonData.Services;
 using MessageBrokerModelsLibrary.Models;
-using Microsoft.Extensions.Options;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using WebConsumer.Interfaces;
@@ -10,7 +9,9 @@ namespace WebConsumer.Handlers;
 public class SearchUsersByIpPartHandler : MessageHandler<SearchUsersByIpPartMessage>
 {
     private readonly IServiceScopeFactory _serviceScopeFactory;
+
     private readonly JsonSerializerOptions _options;
+
     public SearchUsersByIpPartHandler(IServiceScopeFactory serviceScopeFactory)
     {
         _serviceScopeFactory = serviceScopeFactory;
@@ -34,11 +35,11 @@ public class SearchUsersByIpPartHandler : MessageHandler<SearchUsersByIpPartMess
                     Result = null,
                     Success = false
                 };
+
                 string errorResponse = JsonSerializer.Serialize(response, _options);
                 await messageSender.SendResponseAsync(correlationId, errorResponse);
                 return;
             }
-
 
             using (var scope = _serviceScopeFactory.CreateScope())
             {
@@ -65,6 +66,7 @@ public class SearchUsersByIpPartHandler : MessageHandler<SearchUsersByIpPartMess
                 Result = ex,
                 Success = false
             };
+
             string errorResponse = JsonSerializer.Serialize(response, _options);
             await messageSender.SendResponseAsync(correlationId, errorResponse);
         }

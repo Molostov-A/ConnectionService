@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using WebProducer.Interfaces;
+﻿using MessageBrokerModelsLibrary.Models;
+using Microsoft.AspNetCore.Mvc;
 using WebProducer;
-using MessageBrokerModelsLibrary.Models;
-using System;
+using WebProducer.Interfaces;
 
 [ApiController]
 [Route("api/connections")]

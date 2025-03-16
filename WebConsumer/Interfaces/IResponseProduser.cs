@@ -1,7 +1,6 @@
-﻿namespace WebConsumer.Interfaces
+﻿namespace WebConsumer.Interfaces;
+
+public interface IResponseProduser
 {
-    public interface IResponseProduser
-    {
-        Task SendResponseAsync(string correlationId, string response);
-    }
+    Task SendResponseAsync(string correlationId, string response);
 }

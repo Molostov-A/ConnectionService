@@ -1,5 +1,4 @@
-﻿using MessageBrokerModelsLibrary.Models;
-using WebConsumer.Interfaces;
+﻿using WebConsumer.Interfaces;
 
 namespace WebConsumer.Handlers;
 
@@ -7,6 +6,7 @@ public abstract class MessageHandler<TModel> : IMessageHandler
     where TModel : class
 {
     protected string type = typeof(TModel).Name;
+
     public bool CanHandle(Dictionary<string, object> headers)
     {
         if (headers.ContainsKey("type") && headers != null)
@@ -25,7 +25,6 @@ public abstract class MessageHandler<TModel> : IMessageHandler
         // Логика обработки
         await Task.Delay(100); // Имитация асинхронной обработки
         var response = $"Processed by {type} Handler: {message}";
-
 
         // Отправка результата обработки
         await messageSender.SendResponseAsync(correlationId, response);

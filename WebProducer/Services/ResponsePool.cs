@@ -1,5 +1,4 @@
 ﻿using MessageBrokerModelsLibrary.Models;
-using RabbitMQ.Client.Events;
 using System.Collections.Concurrent;
 
 namespace WebProducer;

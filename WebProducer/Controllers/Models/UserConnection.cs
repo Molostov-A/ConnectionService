@@ -1,7 +1,6 @@
-﻿namespace WebProducer.Controllers.Models
+﻿namespace WebProducer.Controllers.Models;
+
+public class UserConnection
 {
-    public class UserConnection
-    {
-        public string ip { get; set; }
-    }
+    public string Ip { get; set; }
 }
