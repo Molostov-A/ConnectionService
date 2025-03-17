@@ -15,14 +15,12 @@ public class UserController : ControllerBase
 {
     private readonly ILogger<UserController> _logger;
     private readonly IRequestProduser _requestProduser;
-    private readonly IConfiguration _configuration;
     private readonly IApiService _apiService;
 
-    public UserController(IRequestProduser requestProduser, ILogger<UserController> logger, IConfiguration configuration, IApiService userService)
+    public UserController(IRequestProduser requestProduser, ILogger<UserController> logger,  IApiService userService)
     {
         _requestProduser = requestProduser;
         _logger = logger;
-        _configuration = configuration;
         _apiService = userService;
     }
 

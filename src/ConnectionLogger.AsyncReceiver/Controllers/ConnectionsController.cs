@@ -2,16 +2,19 @@
 using ConnectionLogger.AsyncReceiver;
 using ConnectionLogger.AsyncReceiver.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using ConnectionLogger.AsyncReceiver.Services;
 
 [ApiController]
 [Route("api/connections")]
 public class ConnectionsController : ControllerBase
 {
-    private readonly IRequestProduser _requestProduser;
+    private readonly ILogger<UserController> _logger;
+    private readonly IApiService _apiService;
 
-    public ConnectionsController(IRequestProduser requestProduser)
+    public ConnectionsController(ILogger<UserController> logger, IApiService userService)
     {
-        _requestProduser = requestProduser;
+        _logger = logger;
+        _apiService = userService;
     }
 
     [HttpGet("search")]
@@ -27,36 +30,10 @@ public class ConnectionsController : ControllerBase
             return BadRequest(new { message = $"direction must equal one of the following strings: {string.Join(", ", Enum.GetNames(typeof(Direction)))}" });
         }
 
-        var message = new SearchConnectionsMessage()
-        {
-            Direction = convertedDirection,
-            OrderBy = convertedOrderBy,
-            UserId = userId
-        };
+        var pathUrl = $"api/connections/search?userId={userId}&orderBy={orderBy}&direction={direction}";
+        var result = await _apiService.GetDataFromServer(pathUrl);
 
-        var type = typeof(SearchConnectionsMessage).Name;
-        var headers = new Dictionary<string, object>
-        {
-            { "type",  type}
-        };
-
-        var correlationId = Guid.NewGuid().ToString();
-        await _requestProduser.SendAsync(message, correlationId, headers);
-
-        // Ожидание ответа
-        ResponseResult response = null;
-        while (response == null)
-        {
-            response = _responsePool.GetResponse(correlationId);
-            await Task.Delay(100);
-        }
-        if (response.Success)
-        {
-            return Ok(response.Result);
-        }
-        else
-        {
-            return BadRequest(response);
-        }
+        _logger.LogInformation("Search completed, found {ResultCount} records", result.Length);
+        return Ok(new { Response = result });
     }
 }
