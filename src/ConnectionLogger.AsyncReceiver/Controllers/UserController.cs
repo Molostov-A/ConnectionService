@@ -77,58 +77,72 @@ public class UserController : ControllerBase
     [HttpGet("search")]
     public async Task<IActionResult> SearchUsersByIpPart([FromQuery] string ipPart, [FromQuery] string protocol)
     {
-        ipPart = ipPart.Trim();
-        if (string.IsNullOrEmpty(ipPart))
+        _logger.LogInformation("User search request by IP: ipPart={IpPart}, protocol={Protocol}", ipPart, protocol);
+
+        if (string.IsNullOrWhiteSpace(ipPart))
         {
-            return BadRequest(new { message = "ipPart must not be empty" });
+            _logger.LogWarning("User search rejected: ipPart is empty");
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Invalid IP",
+                Detail = "ipPart must not be empty",
+                Status = StatusCodes.Status400BadRequest
+            });
         }
 
         if (!IsValidIpProtocol(protocol))
         {
-            return BadRequest(new { message = "Invalid protocol type" });
+            _logger.LogWarning("User search rejected: invalid protocol {Protocol}", protocol);
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Invalid protocol",
+                Detail = "Protocol must be 'IPv4' or 'IPv6'",
+                Status = StatusCodes.Status400BadRequest
+            });
         }
 
         protocol = NormalizeIpProtocol(protocol);
 
         if (!IsValidIpStart(ipPart, protocol))
         {
-            return BadRequest(new { message = "Invalid ipPart or ipPart does not match the protocol type" });
+            _logger.LogWarning("User search rejected: {IpPart} does not match protocol {Protocol}", ipPart, protocol);
+            return BadRequest(new ProblemDetails
+            {
+                Title = "IP and protocol mismatch",
+                Detail = "ipPart does not match the specified protocol type",
+                Status = StatusCodes.Status400BadRequest
+            });
         }
 
-        var pathUrl = $"api/users/search?ipPart={ipPart}&ipVersion={protocol}";
+        try
+        {
+            var result = await _apiService.GetDataFromServer($"api/users/search?ipPart={ipPart}&protocol={protocol}");
 
-        var result = await _apiService.GetDataFromServer(pathUrl);
-
-        return Ok(new { Response = result });
+            _logger.LogInformation("Search completed, found {ResultCount} records", result.Length);
+            return Ok(new { Response = result });
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "Error while making request to the user search API");
+            return StatusCode(StatusCodes.Status502BadGateway, new ProblemDetails
+            {
+                Title = "Service error",
+                Detail = "Failed to retrieve data from the user service",
+                Status = StatusCodes.Status502BadGateway
+            });
+        }
     }
 
-    //[HttpGet("{userId}/ips")]
-    //public async Task<IActionResult> GetUserIps(long userId)
-    //{
-    //    var message = new GetUserIpsMessage()
-    //    {
-    //        UserId = userId
-    //    };
-
-    //    var type = typeof(GetUserIpsMessage).Name;
-    //    var headers = new Dictionary<string, object>
-    //    {
-    //        { "type",  type}
-    //    };
-
-    //    var correlationId = Guid.NewGuid().ToString();
-    //    await _requestProduser.SendAsync(message, correlationId, headers);
 
 
-    //    if (response.Success)
-    //    {
-    //        return Ok(response.Result);
-    //    }
-    //    else
-    //    {
-    //        return BadRequest(response);
-    //    }
-    //}
+    [HttpGet("{userId}/ips")]
+    public async Task<IActionResult> GetUserIps(long userId)
+    {
+        var result = await _apiService.GetDataFromServer($"api/users/{userId}/ips");
+
+        _logger.LogInformation("Search completed, found {ResultCount} records", result.Length);
+        return Ok(new { Response = result });
+    }
 
     private bool IsValidIp(string ipAddress)
     {
@@ -159,7 +173,7 @@ public class UserController : ControllerBase
         {
             "ipv4" => "IPv4",
             "ipv6" => "IPv6",
-            _ => "" // Если передан некорректный протокол, возвращаем ""
+            _ => ""
         };
     }
 
