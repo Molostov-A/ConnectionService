@@ -3,6 +3,9 @@ using ConnectionLogger.Messaging.Messages;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
+using ConnectionLogger.Data.Services;
+using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
 
 [ApiController]
 [Route("api/users")]
@@ -19,6 +22,33 @@ public class UserController : ControllerBase
     {
         var response = new { Id = id, Message = $"Данные для ID {id}" };
         return Ok(response);
+    }
+
+    [HttpGet("search")]
+    public async Task<IActionResult> SearchUsersByIpPart([FromQuery] string ipPart, [FromQuery] string protocol)
+    {
+        var message = new SearchUsersByIpPartMessage()
+        {
+            Ip = ipPart,
+            Protocol = protocol
+        };
+
+        using (var scope = _serviceScopeFactory.CreateScope())
+        {
+            var dataService = scope.ServiceProvider.GetRequiredService<IDataService>();
+
+            var result = await dataService.GetUsersByIpAsync(connectionRequest.Ip, connectionRequest.Protocol);
+
+            var response = new ResponseResult()
+            {
+                Message = "Success",
+                Result = result,
+                Success = true
+            };
+
+            string responseJson = JsonSerializer.Serialize(response, _options);
+            await messageSender.SendResponseAsync(correlationId, responseJson);
+        }
     }
     //[HttpGet("search")]
     //public async Task<IActionResult> SearchUsersByIpPart([FromQuery] string ipPart, [FromQuery] string protocol)
