@@ -49,20 +49,7 @@ public class UserController : ControllerBase
         var correlationId = Guid.NewGuid().ToString();
         await _requestProduser.SendAsync(message, correlationId, headers);
 
-        // Ожидание ответа
-        ResponseResult response = null;
-        while (response == null)
-        {
-            response = _responsePool.GetResponse(correlationId);
-            await Task.Delay(100);
-        }
-        if (response.Success) {
-            return Ok(response.Result);
-        }
-        else
-        {
-            return BadRequest(response);
-        }
+        return Accepted(new { message = "Message accepted by RabbitMQ", correlationId });
     }
 
     [HttpGet("search")]

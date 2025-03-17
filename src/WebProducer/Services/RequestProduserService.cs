@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
+using System.Threading.Channels;
 
 namespace ConnectionLogger.WebProducer.Services;
 
@@ -69,11 +70,9 @@ public class RequestProduserService : IRequestProduser, IDisposable
         await _channel.BasicPublishAsync(
             exchange: _exchange,
             routingKey: _queueName,
-            mandatory: true,
+            mandatory: false,
             basicProperties: properties,
-            body: body);
-
-        //_logger.LogInformation($"Sent message with headers: {string.Join(", ", headers)}");
+        body: body);
     }
 
     public void Dispose()

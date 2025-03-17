@@ -6,23 +6,27 @@ public class Program
 {
     private static readonly HttpClient client = new HttpClient();
     private static readonly Random random = new Random();
-    private static readonly string host = "https://localhost:7007";
+    private static string host = "https://localhost:";
 
     static async Task Main()
     {
-        Console.Write("Введите количество запросов: ");
+
+        Console.Write("Порт (https://localhost:<port>) :");
+        int port = int.Parse(Console.ReadLine() ?? "7007");
+        host += port;
+        Console.Write("Количество запросов: ");
         int requestCount = int.Parse(Console.ReadLine() ?? "10");
 
-        Console.Write("Введите минимальное userId, которое будет использоваться: ");
+        Console.Write("Минимальное userId, которое будет использоваться: ");
         int userIdStart = int.Parse(Console.ReadLine() ?? "1000");
 
-        Console.Write("Введите максимальное userId, которое будет использоваться: ");
+        Console.Write("Максимальное userId, которое будет использоваться: ");
         int userIdFinish = int.Parse(Console.ReadLine() ?? "10000");
 
-        Console.Write("Введите задержку перед каждым запросом (в миллисекундах): ");
+        Console.Write("Задержка перед каждым запросом (в миллисекундах): ");
         int delayMs = int.Parse(Console.ReadLine() ?? "0");
 
-        Console.Write("Введите максимальное количество параллельных запросов: ");
+        Console.Write("Максимальное количество параллельных запросов: ");
         int maxConcurrency = int.Parse(Console.ReadLine() ?? "100");
 
         Console.WriteLine("Запуск теста...");
