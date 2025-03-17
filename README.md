@@ -23,46 +23,6 @@ docker network create my_network
 docker compose -p connection_logger up -d
 ```
 
-# Создание таблиц для API сервиса отслеживания IP-адресов пользователей:
-Ниже представлены схемы таблиц, используемых для хранения данных о пользователях, их IP-адресах и подключениях.
-
-IpAddresses – хранит уникальные IP-адреса.
-Users – содержит информацию о пользователях.
-Connections – фиксирует факты подключения пользователей с определённых IP-адресов, включая время подключения.
-
-## IpAddress
-```sql
-CREATE TABLE IpAddresses (
-    Id BIGINT NOT NULL IDENTITY PRIMARY KEY,
-    Address NVARCHAR(45) NOT NULL,
-    Protocol NVARCHAR(15) NOT NULL,
-    CONSTRAINT UC_IpAddress_Address UNIQUE (Address)
-);
-```
-
-## User
-```sql
-CREATE TABLE Users (
-    Id BIGINT NOT NULL IDENTITY PRIMARY KEY,
-    LastName NVARCHAR(45) NULL,
-    FirstName NVARCHAR(45) NULL
-);
-```
-
-## Connection
-```sql
-CREATE TABLE Connections (
-    UserId BIGINT NOT NULL,
-    IpAddressId BIGINT NOT NULL,
-    ConnectedAt DATETIME NOT NULL DEFAULT GETDATE(),
-    PRIMARY KEY (UserId, IpAddressId, ConnectedAt),
-    FOREIGN KEY (UserId) REFERENCES Users(Id),
-    FOREIGN KEY (IpAddressId) REFERENCES IpAddresses(Id)
-);
-CREATE INDEX IX_Connection_UserId ON Connections(UserId);
-```
-
-
 # Методы HTTP для API сервиса:
 
 ## 1. **POST /api/users/{userId}/connect**
@@ -125,3 +85,60 @@ CREATE INDEX IX_Connection_UserId ON Connections(UserId);
     "connectionTime": "2023-10-10T12:34:56Z"
 }
 ```
+
+
+# Таблицы для базы данных сервиса:
+Ниже представлены схемы таблиц, используемых для хранения данных о пользователях, их IP-адресах и подключениях.
+
+IpAddresses – хранит уникальные IP-адреса.
+Users – содержит информацию о пользователях.
+Connections – фиксирует факты подключения пользователей с определённых IP-адресов, включая время подключения.
+
+#### ip_addresses
+
+Stores information about IP addresses.
+
+|Column Name|Data Type|Description|
+|---|---|---|
+|id|BIGINT|Primary key, auto-increment.|
+|address|NVARCHAR(45)|The IP address.|
+|protocol|NVARCHAR(15)|The protocol (e.g., IPv4, IPv6).|
+
+**Primary Key**: id  
+**Unique Constraint**: address  
+**Indexes**: address
+
+---
+
+#### users
+
+Stores information about platform users.
+
+|Column Name|Data Type|Description|
+|---|---|---|
+|id|BIGINT|Primary key, auto-increment.|
+|lastname|NVARCHAR(45)|User's last name.|
+|firstname|NVARCHAR(45)|User's first name.|
+
+**Primary Key**: id  
+**Indexes**: lastname, firstname
+
+---
+
+#### connections
+
+Stores information about user connections to IP addresses.
+
+|Column Name|Data Type|Description|
+|---|---|---|
+|user_id|BIGINT|Foreign key referencing the Users table.|
+|ip_address_id|BIGINT|Foreign key referencing the IpAddresses table.|
+|connected_at|DATETIME|Timestamp when the connection was made.|
+
+**Primary Key**: user_id, ip_address_id, connected_at  
+**Foreign Keys**:
+
+- user_id → Users(id)
+- ip_address_id → IpAddresses(id)  
+    **Indexes**: user_id
+
