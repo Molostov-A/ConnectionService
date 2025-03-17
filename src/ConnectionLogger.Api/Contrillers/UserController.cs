@@ -2,77 +2,24 @@
 using ConnectionLogger.Messaging.Messages;
 using System.Net;
 using System.Net.Sockets;
-using ConnectionLogger.AsyncReceiver;
-using ConnectionLogger.AsyncReceiver.Interfaces;
-using ConnectionLogger.AsyncReceiver.Controllers.Models;
 using System.Text.RegularExpressions;
-using ConnectionLogger.AsyncReceiver.Services;
 
 [ApiController]
 [Route("api/users")]
 public class UserController : ControllerBase
 {
-    private readonly ILogger<UserController> _logger;
-    private readonly IRequestProduser _requestProduser;
-    private readonly IConfiguration _configuration;
-    private readonly IUserService _apiService;
-
-    public UserController(IRequestProduser requestProduser, ILogger<UserController> logger, IConfiguration configuration, IUserService userService)
+    protected readonly ILogger<UserController> _logger;
+    public UserController(ILogger<UserController> logger)
     {
-        _requestProduser = requestProduser;
         _logger = logger;
-        _configuration = configuration;
-        _apiService = userService;
-    }
-
-    /// <summary>
-    /// Через RabbitMQ
-    /// </summary>
-    /// <param name="userId"></param>
-    /// <param name="request"></param>
-    /// <returns></returns>
-    [HttpPost]
-    [Route("{userId}/connect")]
-    public async Task<IActionResult> ConnectUser(long userId, [FromBody] UserConnection request)
-    {
-        if (request == null || !IsValidIp(request.Ip))
-        {
-            return BadRequest(new { message = "Invalid IP address" });
-        }
-
-        string ip = request.Ip;
-
-        string protocol = GetIpProtocol(ip);
-
-        var message = new ConnectUserMessage
-        {
-            UserId = userId,
-            IpAddress = ip,
-            Protocol = protocol
-        };
-
-        var type = typeof(ConnectUserMessage).Name;
-        var headers = new Dictionary<string, object>
-        {
-            { "type",  type}
-        };
-
-        var correlationId = Guid.NewGuid().ToString();
-        await _requestProduser.SendAsync(message, correlationId, headers);
-
-        return Accepted(new { message = "Message accepted by RabbitMQ", correlationId });
     }
 
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetData(int id)
+    public IActionResult GetData(int id)
     {
-        _logger.LogInformation("Запрос клиента для ID {Id}", id);
-
-        var result = await _apiService.GetDataFromServer(id);
-
-        return Ok(new { Response = result });
+        var response = new { Id = id, Message = $"Данные для ID {id}" };
+        return Ok(response);
     }
-
     //[HttpGet("search")]
     //public async Task<IActionResult> SearchUsersByIpPart([FromQuery] string ipPart, [FromQuery] string protocol)
     //{

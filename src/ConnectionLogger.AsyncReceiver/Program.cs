@@ -8,12 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<AppSettings>(builder.Configuration);
 
 builder.Services.AddScoped<IRequestProduser, RequestProduserService>();
-builder.Services.AddSingleton<ResponsePool>();
-builder.Services.AddHostedService<ResponseConsumerService>();
 
 builder.Services.AddControllers();
+builder.Services.AddLogging();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpClient<IUserService,UserService>();
 
 var app = builder.Build();
 

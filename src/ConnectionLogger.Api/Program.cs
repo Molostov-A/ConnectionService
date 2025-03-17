@@ -29,8 +29,8 @@ builder.Services.AddSingleton<IMessageHandler, SearchConnectionsHandler>();
 // Регистрация сервиса, который слушает брокер на запросы
 builder.Services.AddHostedService<RequestConsumerService>();
 
+builder.Services.AddLogging();
 builder.Services.AddControllers();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
