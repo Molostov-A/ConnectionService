@@ -1,6 +1,6 @@
-﻿using WebConsumer.Interfaces;
+﻿using ConnectionLogger.WebConsumer.Interfaces;
 
-namespace WebConsumer.Handlers;
+namespace ConnectionLogger.WebConsumer.Handlers;
 
 public abstract class MessageHandler<TModel> : IMessageHandler
     where TModel : class

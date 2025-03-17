@@ -1,7 +1,7 @@
-using WebProducer;
-using WebProducer.Configurations;
-using WebProducer.Interfaces;
-using WebProducer.Services;
+using ConnectionLogger.WebProducer;
+using ConnectionLogger.WebProducer.Configurations;
+using ConnectionLogger.WebProducer.Interfaces;
+using ConnectionLogger.WebProducer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

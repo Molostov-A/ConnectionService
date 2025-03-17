@@ -1,11 +1,11 @@
-﻿using ModelsLibrary.Configurations;
+﻿using ConnectionLogger.Messaging.Configurations;
+using ConnectionLogger.WebConsumer.Configurations;
+using ConnectionLogger.WebConsumer.Interfaces;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using System.Text;
-using WebConsumer.Configurations;
-using WebConsumer.Interfaces;
 
-namespace WebConsumer.Services;
+namespace ConnectionLogger.WebConsumer.Services;
 
 public class ResponseProduserService : IResponseProduser, IDisposable
 {

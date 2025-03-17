@@ -1,4 +1,4 @@
-﻿namespace WebConsumer.Interfaces;
+﻿namespace ConnectionLogger.WebConsumer.Interfaces;
 
 public interface IResponseProduser
 {

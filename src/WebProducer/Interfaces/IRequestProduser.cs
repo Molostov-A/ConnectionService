@@ -1,4 +1,4 @@
-﻿namespace WebProducer.Interfaces;
+﻿namespace ConnectionLogger.WebProducer.Interfaces;
 
 public interface IRequestProduser
 {

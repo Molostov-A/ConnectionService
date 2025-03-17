@@ -1,4 +1,4 @@
-﻿namespace ModelsLibrary.Configurations;
+﻿namespace ConnectionLogger.Messaging.Configurations;
 
 public class LoggingSettings
 {

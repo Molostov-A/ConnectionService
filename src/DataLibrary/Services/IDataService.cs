@@ -1,7 +1,7 @@
-﻿using DataLibrary.Models;
-using ModelsLibrary.Models;
+﻿using ConnectionLogger.Data.Models;
+using ConnectionLogger.Messaging.Messages;
 
-namespace CommonData.Services;
+namespace ConnectionLogger.Data.Services;
 
 public interface IDataService
 {

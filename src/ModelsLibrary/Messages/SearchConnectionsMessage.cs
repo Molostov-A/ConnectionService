@@ -1,4 +1,4 @@
-﻿namespace ModelsLibrary.Models;
+﻿namespace ConnectionLogger.Messaging.Messages;
 
 public class SearchConnectionsMessage
 {

@@ -1,10 +1,10 @@
-using CommonData.Services;
-using DataLibrary;
+using ConnectionLogger.Data;
+using ConnectionLogger.Data.Services;
+using ConnectionLogger.WebConsumer.Configurations;
+using ConnectionLogger.WebConsumer.Handlers;
+using ConnectionLogger.WebConsumer.Interfaces;
+using ConnectionLogger.WebConsumer.Services;
 using Microsoft.EntityFrameworkCore;
-using WebConsumer.Configurations;
-using WebConsumer.Handlers;
-using WebConsumer.Interfaces;
-using WebConsumer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

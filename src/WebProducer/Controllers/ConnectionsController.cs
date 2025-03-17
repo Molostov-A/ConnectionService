@@ -1,7 +1,7 @@
-﻿using ModelsLibrary.Models;
+﻿using ConnectionLogger.Messaging.Messages;
+using ConnectionLogger.WebProducer;
+using ConnectionLogger.WebProducer.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using WebProducer;
-using WebProducer.Interfaces;
 
 [ApiController]
 [Route("api/connections")]

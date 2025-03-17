@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace DataLibrary.Models;
+namespace ConnectionLogger.Data.Models;
 
 public class User
 {

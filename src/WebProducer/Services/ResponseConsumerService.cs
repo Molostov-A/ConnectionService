@@ -1,12 +1,12 @@
-﻿using ModelsLibrary.Models;
+﻿using ConnectionLogger.Messaging.Messages;
+using ConnectionLogger.WebProducer.Configurations;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
 using System.Text.Json;
-using WebProducer.Configurations;
 
-namespace WebProducer.Services;
+namespace ConnectionLogger.WebProducer.Services;
 
 public class ResponseConsumerService : BackgroundService, IDisposable
 {

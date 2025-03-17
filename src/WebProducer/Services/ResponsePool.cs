@@ -1,7 +1,7 @@
-﻿using ModelsLibrary.Models;
+﻿using ConnectionLogger.Messaging.Messages;
 using System.Collections.Concurrent;
 
-namespace WebProducer;
+namespace ConnectionLogger.WebProducer;
 public class ResponsePool
 {
     private readonly ConcurrentDictionary<string, ResponseResult> _responses = new();

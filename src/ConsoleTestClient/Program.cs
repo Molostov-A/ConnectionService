@@ -10,38 +10,31 @@ public class Program
 
     static async Task Main()
     {
-        // Ввод количества запросов
         Console.Write("Введите количество запросов: ");
         int requestCount = int.Parse(Console.ReadLine() ?? "10");
 
-        // Ввод минимального и максимального userId
         Console.Write("Введите минимальное userId, которое будет использоваться: ");
         int userIdStart = int.Parse(Console.ReadLine() ?? "1000");
 
         Console.Write("Введите максимальное userId, которое будет использоваться: ");
         int userIdFinish = int.Parse(Console.ReadLine() ?? "10000");
 
-        // Ввод задержки перед каждым запросом (в миллисекундах)
         Console.Write("Введите задержку перед каждым запросом (в миллисекундах): ");
         int delayMs = int.Parse(Console.ReadLine() ?? "0");
 
-        // Ввод максимального числа параллельных запросов
         Console.Write("Введите максимальное количество параллельных запросов: ");
         int maxConcurrency = int.Parse(Console.ReadLine() ?? "100");
 
         Console.WriteLine("Запуск теста...");
 
-        // Собираем результаты в список
         var results = new List<string>();
 
         var stopwatch = Stopwatch.StartNew();
 
-        // Вызов теста с новыми параметрами
         await RunTestAsync(requestCount, userIdStart, userIdFinish, delayMs, maxConcurrency, results);
 
         stopwatch.Stop();
 
-        // Теперь выводим результаты в консоль после завершения всех запросов
         foreach (var result in results)
         {
             Console.WriteLine(result);
@@ -67,11 +60,11 @@ public class Program
 
     static async Task SendRequestAsync(int userIdStart, int userIdFinish, int delayMs, SemaphoreSlim semaphore, List<string> results)
     {
-        await semaphore.WaitAsync(); // Ограничиваем число параллельных запросов
+        await semaphore.WaitAsync();
         long userId = Random.Shared.Next(userIdStart, userIdFinish);
         try
         {
-            await Task.Delay(delayMs); // Задержка перед отправкой            
+            await Task.Delay(delayMs); // Задержка перед отправкой
             int typeProtocol = Random.Shared.Next(2) == 0 ? 4 : 6;
             string ip = typeProtocol == 4 ? IpGenerator.GenerateIPv4() : IpGenerator.GenerateIPv6();
 
@@ -82,7 +75,6 @@ public class Program
             var response = await client.PostAsync($"{host}/api/users/{userId}/connect", content);
             string responseBody = await response.Content.ReadAsStringAsync();
 
-            // Собираем результаты в список (не выводим в консоль до завершения всех запросов)
             results.Add($"Ответ от {userId}: Статус {response.StatusCode}, Тело ответа: {responseBody}");
         }
         catch (Exception ex)
@@ -91,7 +83,7 @@ public class Program
         }
         finally
         {
-            semaphore.Release(); // Освобождаем слот
+            semaphore.Release();
         }
     }
 }

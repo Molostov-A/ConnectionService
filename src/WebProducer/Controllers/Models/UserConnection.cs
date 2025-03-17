@@ -1,4 +1,4 @@
-﻿namespace WebProducer.Controllers.Models;
+﻿namespace ConnectionLogger.WebProducer.Controllers.Models;
 
 public class UserConnection
 {

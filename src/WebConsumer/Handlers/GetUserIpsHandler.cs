@@ -1,10 +1,10 @@
-﻿using CommonData.Services;
-using ModelsLibrary.Models;
+﻿using ConnectionLogger.Data.Services;
+using ConnectionLogger.Messaging.Messages;
+using ConnectionLogger.WebConsumer.Interfaces;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using WebConsumer.Interfaces;
 
-namespace WebConsumer.Handlers;
+namespace ConnectionLogger.WebConsumer.Handlers;
 
 public class GetUserIpsHandler : MessageHandler<GetUserIpsMessage>
 {

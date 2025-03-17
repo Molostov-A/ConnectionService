@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ModelsLibrary.Models;
+using ConnectionLogger.Messaging.Messages;
 using System.Net;
 using System.Net.Sockets;
-using WebProducer;
-using WebProducer.Interfaces;
-using WebProducer.Controllers.Models;
+using ConnectionLogger.WebProducer;
+using ConnectionLogger.WebProducer.Interfaces;
+using ConnectionLogger.WebProducer.Controllers.Models;
 using System.Text.RegularExpressions;
 
 [ApiController]

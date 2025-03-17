@@ -1,6 +1,6 @@
-﻿using ModelsLibrary.Configurations;
+﻿using ConnectionLogger.Messaging.Configurations;
 
-namespace WebProducer.Configurations;
+namespace ConnectionLogger.WebProducer.Configurations;
 
 public class AppSettings : AppSettingsBase
 {

@@ -1,4 +1,4 @@
-﻿namespace WebConsumer.Configurations;
+﻿namespace ConnectionLogger.WebConsumer.Configurations;
 
 public class ConnectionStringsSettings
 {

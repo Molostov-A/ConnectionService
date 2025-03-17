@@ -1,4 +1,4 @@
-﻿namespace DataLibrary.Models;
+﻿namespace ConnectionLogger.Data.Models;
 
 public class Connection
 {
