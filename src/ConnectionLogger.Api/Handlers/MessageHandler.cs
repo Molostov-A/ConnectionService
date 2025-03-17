@@ -20,13 +20,11 @@ public abstract class MessageHandler<TModel> : IMessageHandler
         }
     }
 
-    public virtual async Task HandleAsync(string message, Dictionary<string, object> headers, string correlationId, IResponseProduser messageSender)
+    public virtual async Task HandleAsync(string message, Dictionary<string, object> headers, string correlationId)
     {
         // Логика обработки
         await Task.Delay(100); // Имитация асинхронной обработки
         var response = $"Processed by {type} Handler: {message}";
 
-        // Отправка результата обработки
-        await messageSender.SendResponseAsync(correlationId, response);
     }
 }

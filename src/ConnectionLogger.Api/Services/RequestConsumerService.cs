@@ -19,12 +19,10 @@ public class RequestConsumerService : BackgroundService, IDisposable
     private IChannel _channel;
 
     private readonly IEnumerable<IMessageHandler> _handlers;
-    private readonly IResponseProduser _messageSender;
 
-    public RequestConsumerService(IEnumerable<IMessageHandler> handlers, IResponseProduser messageSender, ILogger<RequestConsumerService> logger, IOptions<AppSettings> appSettings)
+    public RequestConsumerService(IEnumerable<IMessageHandler> handlers, ILogger<RequestConsumerService> logger, IOptions<AppSettings> appSettings)
     {
         _handlers = handlers;
-        _messageSender = messageSender;
 
         _logger = logger;
         _appSettings = appSettings.Value;
@@ -54,7 +52,6 @@ public class RequestConsumerService : BackgroundService, IDisposable
                                          arguments: null);
 
         await _channel.ExchangeDeclareAsync(exchange: "headers_exchange", type: ExchangeType.Headers);
-        //_logger.LogInformation("✅ Подключение к RabbitMQ для прослушивания ЗАПРОСОВ установлено.");
 
     }
 
@@ -62,11 +59,8 @@ public class RequestConsumerService : BackgroundService, IDisposable
     {
         if (_channel == null)
         {
-            //_logger.LogError("❌ _channel не инициализирован.");
             return;
         }
-
-        //_logger.LogInformation("Consumer запущен, ожидаю сообщения...");
 
         var consumer = new AsyncEventingBasicConsumer(_channel);
         consumer.ReceivedAsync += async (model, ea) =>
@@ -75,7 +69,6 @@ public class RequestConsumerService : BackgroundService, IDisposable
             {
                 if (ea == null)
                 {
-                    //_logger.LogWarning("❌ Получено некорректное сообщение.");
                     return;
                 }
 
@@ -87,7 +80,6 @@ public class RequestConsumerService : BackgroundService, IDisposable
                     kvp => kvp.Key,
                     kvp => kvp.Value is byte[] byteArray ? Encoding.UTF8.GetString(byteArray) : kvp.Value
 );
-                //_logger.LogWarning("Вызов обработчиков.");
 
                 bool handled = false;
 
@@ -96,7 +88,7 @@ public class RequestConsumerService : BackgroundService, IDisposable
                 {
                     if (handler.CanHandle(convertedHeaders))
                     {
-                        await handler.HandleAsync(message, convertedHeaders, correlationId, _messageSender);
+                        await handler.HandleAsync(message, convertedHeaders, correlationId);
                         handled = true;
                         break;
                     }
@@ -108,14 +100,12 @@ public class RequestConsumerService : BackgroundService, IDisposable
                 }
                 else
                 {
-                    //_logger.LogWarning("⚠ Сообщение не обработано ни одним обработчиком.");
                     await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false);
                 }
 
             }
             catch (Exception ex)
             {
-                //_logger.LogError($"❌ Ошибка обработки сообщения: {ex.Message}");
                 await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: true);
             }
         };

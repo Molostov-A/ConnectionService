@@ -22,7 +22,7 @@ public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
         };
     }
 
-    public override async Task HandleAsync(string message, Dictionary<string, object> headers, string correlationId, IResponseProduser messageSender)
+    public override async Task HandleAsync(string message, Dictionary<string, object> headers, string correlationId)
     {
         try
         {
@@ -37,7 +37,6 @@ public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
                 };
 
                 string errorResponse = JsonSerializer.Serialize(response, _options);
-                await messageSender.SendResponseAsync(correlationId, errorResponse);
                 return;
             }
 
@@ -55,7 +54,6 @@ public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
                 };
 
                 string responseJson = JsonSerializer.Serialize(response, _options);
-                await messageSender.SendResponseAsync(correlationId, responseJson);
             }
         }
         catch (Exception ex)
@@ -68,7 +66,6 @@ public class ConnectUserHandler : MessageHandler<ConnectUserMessage>
             };
 
             string errorResponse = JsonSerializer.Serialize(response, _options);
-            await messageSender.SendResponseAsync(correlationId, errorResponse);
         }
     }
 }
