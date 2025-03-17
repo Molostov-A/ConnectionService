@@ -7,6 +7,7 @@ using ConnectionLogger.AsyncReceiver.Interfaces;
 using ConnectionLogger.AsyncReceiver.Controllers.Models;
 using System.Text.RegularExpressions;
 using ConnectionLogger.AsyncReceiver.Services;
+using System;
 
 [ApiController]
 [Route("api/users")]
@@ -15,9 +16,9 @@ public class UserController : ControllerBase
     private readonly ILogger<UserController> _logger;
     private readonly IRequestProduser _requestProduser;
     private readonly IConfiguration _configuration;
-    private readonly IUserService _apiService;
+    private readonly IApiService _apiService;
 
-    public UserController(IRequestProduser requestProduser, ILogger<UserController> logger, IConfiguration configuration, IUserService userService)
+    public UserController(IRequestProduser requestProduser, ILogger<UserController> logger, IConfiguration configuration, IApiService userService)
     {
         _requestProduser = requestProduser;
         _logger = logger;
@@ -67,65 +68,39 @@ public class UserController : ControllerBase
     public async Task<IActionResult> GetData(int id)
     {
         _logger.LogInformation("Запрос клиента для ID {Id}", id);
-
-        var result = await _apiService.GetDataFromServer(id);
+        var pathUrl = $"api/users/{id}";
+        var result = await _apiService.GetDataFromServer(pathUrl);
 
         return Ok(new { Response = result });
     }
 
-    //[HttpGet("search")]
-    //public async Task<IActionResult> SearchUsersByIpPart([FromQuery] string ipPart, [FromQuery] string protocol)
-    //{
-    //    ipPart = ipPart.Trim();
-    //    if (string.IsNullOrEmpty(ipPart))
-    //    {
-    //        return BadRequest(new { message = "ipPart must not be empty" });
-    //    }
+    [HttpGet("search")]
+    public async Task<IActionResult> SearchUsersByIpPart([FromQuery] string ipPart, [FromQuery] string protocol)
+    {
+        ipPart = ipPart.Trim();
+        if (string.IsNullOrEmpty(ipPart))
+        {
+            return BadRequest(new { message = "ipPart must not be empty" });
+        }
 
-    //    if (!IsValidIpProtocol(protocol))
-    //    {
-    //        return BadRequest(new { message = "Invalid protocol type" });
-    //    }
+        if (!IsValidIpProtocol(protocol))
+        {
+            return BadRequest(new { message = "Invalid protocol type" });
+        }
 
-    //    protocol = NormalizeIpProtocol(protocol);      
+        protocol = NormalizeIpProtocol(protocol);
 
-    //    if (!IsValidIpStart(ipPart, protocol))
-    //    {
-    //        return BadRequest(new { message = "Invalid ipPart or ipPart does not match the protocol type" });
-    //    }
+        if (!IsValidIpStart(ipPart, protocol))
+        {
+            return BadRequest(new { message = "Invalid ipPart or ipPart does not match the protocol type" });
+        }
 
-    //    var message = new SearchUsersByIpPartMessage()
-    //    {
-    //        Ip = ipPart,
-    //        Protocol = protocol
-    //    };
+        var pathUrl = $"api/users/search?ipPart={ipPart}&ipVersion={protocol}";
 
-    //    var type = typeof(SearchUsersByIpPartMessage).Name;
-    //    var headers = new Dictionary<string, object>
-    //    {
-    //        { "type",  type}
-    //    };
+        var result = await _apiService.GetDataFromServer(pathUrl);
 
-    //    var correlationId = Guid.NewGuid().ToString();
-    //    await _requestProduser.SendAsync(message, correlationId, headers);
-
-    //    // Ожидание ответа
-    //    ResponseResult response = null;
-    //    while (response == null)
-    //    {
-    //        response = _responsePool.GetResponse(correlationId);
-    //        await Task.Delay(100);
-    //    }
-
-    //    if (response.Success)
-    //    {
-    //        return Ok(response.Result);
-    //    }
-    //    else
-    //    {
-    //        return BadRequest(response);
-    //    }
-    //}
+        return Ok(new { Response = result });
+    }
 
     //[HttpGet("{userId}/ips")]
     //public async Task<IActionResult> GetUserIps(long userId)

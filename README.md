@@ -38,7 +38,7 @@ docker compose -p connection_logger up -d
 200 OK: Подключение успешно добавлено.  
 400 Bad Request: Ошибка в данных запроса.
 
-## 2. **GET /api/users/search?ipPart={ipPart}&ipVersion={ipVersion}**
+## 2. **GET /api/users/search?ipPart={ipPart}&protocol={protocol}**
 Ищет пользователей по части IP-адреса.
 
 #### Параметры запроса:

@@ -4,25 +4,29 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ConnectionLogger.AsyncReceiver.Interfaces;
+using Microsoft.Extensions.Options;
+using ConnectionLogger.AsyncReceiver.Configurations;
 
 namespace ConnectionLogger.AsyncReceiver.Services;
 
-public class UserService : IUserService
+public class ApiService : IApiService
 {
     private readonly HttpClient _httpClient;
     private readonly string _baseUrl;
-    private readonly ILogger<UserService> _logger;
+    private readonly ILogger<ApiService> _logger;
+    private readonly AppSettings _appSettings;
 
-    public UserService(HttpClient httpClient, IConfiguration configuration, ILogger<UserService> logger)
+    public ApiService(HttpClient httpClient, IOptions<AppSettings> appSettings, ILogger<ApiService> logger)
     {
         _httpClient = httpClient;
-        _baseUrl = configuration["ApiSettings:BaseUrl"];
+        _appSettings = appSettings.Value;
+        _baseUrl = _appSettings.ApiSettings.BaseUrl;
         _logger = logger;
     }
 
-    public async Task<string> GetDataFromServer(int id)
+    public async Task<string> GetDataFromServer(string pathUrl)
     {
-        string url = $"{_baseUrl}/{id}";
+        string url = $"{_baseUrl}/{pathUrl}";
         _logger.LogInformation("Отправка запроса к {Url}", url);
 
         var response = await _httpClient.GetAsync(url);
