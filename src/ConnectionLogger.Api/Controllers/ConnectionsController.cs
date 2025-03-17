@@ -2,6 +2,7 @@
 using ConnectionLogger.Data.Services;
 using ConnectionLogger.Messaging.Messages;
 using System.Text.Json;
+using ConnectionLogger.Data.Models;
 
 [ApiController]
 [Route("api/connections")]
@@ -37,9 +38,16 @@ public class ConnectionsController : ControllerBase
         };
 
         var result = await _dataService.GetLatestConnectionAsync(message.UserId, message.OrderBy, message.Direction);
+        var ip = await _dataService.GetAddressAsync(result.IpAddressId);
+        var viewResult = new ConnectMessage()
+        {
+            UserId = result.UserId,
+            ConnectedAt = result.ConnectedAt,
+            Ip = ip.Address
+        };
 
-        string responseJson = JsonSerializer.Serialize(result);
+        string responseJson = JsonSerializer.Serialize(viewResult);
 
-        return Ok(result);
+        return Ok(responseJson);
     }
 }

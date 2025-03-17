@@ -13,6 +13,11 @@ public class DataService : IDataService
         _dbContext = dbContext;
     }
 
+    public async Task<IpAddress?> GetAddressAsync(long id)
+    {
+        return await _dbContext.IpAddresses.FindAsync(id);
+    }
+
     public async Task<Connection> SaveConnectionAsync(long userId, string address, string protocol)
     {
         try

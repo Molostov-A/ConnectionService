@@ -12,4 +12,5 @@ public interface IDataService
     Task<List<string>> GetUserIpsAsync(long userId);
 
     Task<Connection> GetLatestConnectionAsync(long userId, OrderBy orderBy, Direction direction);
+    Task<IpAddress?> GetAddressAsync(long id);
 }
