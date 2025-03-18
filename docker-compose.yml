@@ -6,9 +6,9 @@ services:
     restart: always
     container_name: postgres_container
     environment:
-      POSTGRES_USER: admindb
-      POSTGRES_PASSWORD: admindb
-      POSTGRES_DB: postgresbd
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ConnectionLoggedDb
     ports:
       - "5432:5432"
     volumes:
@@ -44,6 +44,36 @@ services:
       - my_network
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+  connectionlogger_api:
+    build:
+      context: .
+      dockerfile: src/ConnectionLogger.Api/Dockerfile
+    container_name: connectionlogger_api
+    ports:
+      - "5000:5000"
+    restart: "no"
+    networks:
+      - my_network
+    depends_on:
+      - postgres
+      - rabbitmq
+    deploy:
+      restart_policy:
+        condition: none
+
+  connectionlogger_asyncreceiver:
+    build:
+      context: .
+      dockerfile: src/ConnectionLogger.AsyncReceiver/Dockerfile
+    container_name: connectionlogger_asyncreceiver
+    networks:
+      - my_network
+    restart: "no"
+    depends_on:
+      - rabbitmq
+    deploy:
+      restart_policy:
+        condition: none
 
 volumes:
   pg_data:
