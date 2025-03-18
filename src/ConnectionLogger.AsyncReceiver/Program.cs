@@ -1,4 +1,3 @@
-using ConnectionLogger.AsyncReceiver;
 using ConnectionLogger.AsyncReceiver.Configurations;
 using ConnectionLogger.AsyncReceiver.Interfaces;
 using ConnectionLogger.AsyncReceiver.Services;
@@ -7,13 +6,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<AppSettings>(builder.Configuration);
 
-builder.Services.AddScoped<IRequestProduser, RequestProduserService>();
+builder.Services.AddScoped<IRequestProducer, RequestProducerService>();
 
 builder.Services.AddControllers();
 builder.Services.AddLogging();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddHttpClient<IApiService,ApiService>();
 
 var app = builder.Build();
 

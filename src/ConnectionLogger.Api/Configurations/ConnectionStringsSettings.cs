@@ -2,5 +2,5 @@
 
 public class ConnectionStringsSettings
 {
-    public string DefaultConnection { get; set; } = string.Empty;
+    public required string DefaultConnection { get; set; }
 }

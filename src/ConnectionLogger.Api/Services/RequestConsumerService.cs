@@ -10,7 +10,6 @@ namespace ConnectionLogger.Api.Services;
 
 public class RequestConsumerService : BackgroundService, IDisposable
 {
-    private readonly ILogger<RequestConsumerService> _logger;
     private readonly AppSettings _appSettings;
     private readonly RabbitMQSettings _rabbitMqSettings;
     private readonly string _queueName;
@@ -20,11 +19,10 @@ public class RequestConsumerService : BackgroundService, IDisposable
 
     private readonly IEnumerable<IMessageHandler> _handlers;
 
-    public RequestConsumerService(IEnumerable<IMessageHandler> handlers, ILogger<RequestConsumerService> logger, IOptions<AppSettings> appSettings)
+    public RequestConsumerService(IEnumerable<IMessageHandler> handlers, IOptions<AppSettings> appSettings)
     {
         _handlers = handlers;
 
-        _logger = logger;
         _appSettings = appSettings.Value;
         _rabbitMqSettings = _appSettings.RabbitMQ;
         _queueName = _appSettings.RabbitMQ.RequestQueue;

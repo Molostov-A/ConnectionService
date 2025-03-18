@@ -17,10 +17,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<IDataService, DataService>();
 
-// Регистрация обработчиков
+// Регистрация обработчиков сообщений из RabbitMQ
 builder.Services.AddSingleton<IMessageHandler, ConnectUserHandler>();
 
-// Регистрация сервиса, который слушает брокер на запросы
 builder.Services.AddHostedService<RequestConsumerService>();
 
 builder.Services.AddLogging();

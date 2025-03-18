@@ -5,7 +5,6 @@ using System.Text.Json;
 public class Program
 {
     private static readonly HttpClient client = new HttpClient();
-    private static readonly Random random = new Random();
     private static string host = "https://localhost:";
 
     static async Task Main()
@@ -51,7 +50,7 @@ public class Program
 
     static async Task RunTestAsync(int requestCount, int userIdStart, int userIdFinish, int delayMs, int maxConcurrency, List<string> results)
     {
-        var semaphore = new SemaphoreSlim(maxConcurrency); // Ограничение параллельных запросов
+        var semaphore = new SemaphoreSlim(maxConcurrency);
         var tasks = new List<Task>();
 
         for (int i = 0; i < requestCount; i++)
@@ -68,7 +67,7 @@ public class Program
         long userId = Random.Shared.Next(userIdStart, userIdFinish);
         try
         {
-            await Task.Delay(delayMs); // Задержка перед отправкой
+            await Task.Delay(delayMs);
             int typeProtocol = Random.Shared.Next(2) == 0 ? 4 : 6;
             string ip = typeProtocol == 4 ? IpGenerator.GenerateIPv4() : IpGenerator.GenerateIPv6();
 

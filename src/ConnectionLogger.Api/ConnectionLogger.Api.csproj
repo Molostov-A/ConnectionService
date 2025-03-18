@@ -19,8 +19,6 @@
   <ItemGroup>
     <ProjectReference Include="..\ConnectionLogger.Data\ConnectionLogger.Data.csproj" />
     <ProjectReference Include="..\ConnectionLogger.Messaging\ConnectionLogger.Messaging.csproj" />
-    <ProjectReference Include="..\DataLibrary\ConnectionLogger.Data.csproj" />
-    <ProjectReference Include="..\ModelsLibrary\ConnectionLogger.Messaging.csproj" />
   </ItemGroup>
 
   <ItemGroup>

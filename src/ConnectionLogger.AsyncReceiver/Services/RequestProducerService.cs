@@ -1,17 +1,16 @@
-﻿using ConnectionLogger.Messaging.Configurations;
-using ConnectionLogger.AsyncReceiver.Configurations;
+﻿using ConnectionLogger.AsyncReceiver.Configurations;
 using ConnectionLogger.AsyncReceiver.Interfaces;
+using ConnectionLogger.Messaging.Configurations;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Channels;
 
 namespace ConnectionLogger.AsyncReceiver.Services;
 
-public class RequestProduserService : IRequestProduser, IDisposable
+public class RequestProducerService : IRequestProducer, IDisposable
 {
-    protected readonly ILogger<RequestProduserService> _logger;
+    protected readonly ILogger<RequestProducerService> _logger;
     private readonly IConnection _connection;
     private readonly IChannel _channel;
     private readonly string _exchange = "headers_exchange";
@@ -20,7 +19,7 @@ public class RequestProduserService : IRequestProduser, IDisposable
     private readonly RabbitMQSettings _rabbitMqSettings;
     private readonly string _queueName;
 
-    public RequestProduserService(IOptions<AppSettings> appSettings, ILogger<RequestProduserService> logger)
+    public RequestProducerService(IOptions<AppSettings> appSettings, ILogger<RequestProducerService> logger)
     {
         _logger = logger;
         _appSettings = appSettings.Value;
@@ -53,7 +52,7 @@ public class RequestProduserService : IRequestProduser, IDisposable
         await SendAsync(message, correlationId, headers);
     }
 
-    public async Task SendAsync(string message, string correlationId, Dictionary<string, object> headers)
+    public async Task SendAsync(string message, string correlationId, Dictionary<string, object>? headers)
     {
         await _channel.QueueBindAsync(
             queue: _queueName,

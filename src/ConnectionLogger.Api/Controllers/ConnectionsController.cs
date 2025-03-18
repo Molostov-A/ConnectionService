@@ -1,8 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using ConnectionLogger.Data.Services;
+﻿using ConnectionLogger.Data.Services;
 using ConnectionLogger.Messaging.Messages;
+using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using ConnectionLogger.Data.Models;
 
 [ApiController]
 [Route("api/connections")]

@@ -2,7 +2,6 @@
 using ConnectionLogger.Messaging.Messages;
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using ConnectionLogger.Api.Interfaces;
 
 namespace ConnectionLogger.Api.Handlers;
 

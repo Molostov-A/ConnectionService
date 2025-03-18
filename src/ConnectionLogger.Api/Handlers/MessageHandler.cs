@@ -25,6 +25,5 @@ public abstract class MessageHandler<TModel> : IMessageHandler
         // Логика обработки
         await Task.Delay(100); // Имитация асинхронной обработки
         var response = $"Processed by {type} Handler: {message}";
-
     }
 }

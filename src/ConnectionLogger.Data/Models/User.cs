@@ -8,8 +8,8 @@ public class User
     public long Id { get; set; }
 
     [MaxLength(45)]
-    public string LastName { get; set; }
+    public required string LastName { get; set; }
 
     [MaxLength(45)]
-    public string FirstName { get; set; }
+    public required string FirstName { get; set; }
 }

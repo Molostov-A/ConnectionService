@@ -9,9 +9,9 @@ public class IpAddress
 
     [MaxLength(45)]
     [Required]
-    public string Address { get; set; }
+    public required string Address { get; set; }
 
     [MaxLength(15)]
     [Required]
-    public string Protocol { get; set; }
+    public required string Protocol { get; set; }
 }

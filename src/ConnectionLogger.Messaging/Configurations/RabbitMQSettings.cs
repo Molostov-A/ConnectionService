@@ -11,6 +11,4 @@ public class RabbitMQSettings
     public string Password { get; set; } = string.Empty;
 
     public string RequestQueue { get; set; } = string.Empty;
-
-    public string ResponseQueue { get; set; } = string.Empty;
 }

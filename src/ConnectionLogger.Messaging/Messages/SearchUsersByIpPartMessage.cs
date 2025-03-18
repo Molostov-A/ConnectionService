@@ -2,7 +2,7 @@
 
 public class SearchUsersByIpPartMessage
 {
-    public string Ip {  get; set; }
+    public required string Ip {  get; set; }
 
-    public string Protocol { get; set; }
+    public required string Protocol { get; set; }
 }

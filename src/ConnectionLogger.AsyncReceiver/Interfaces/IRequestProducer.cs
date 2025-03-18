@@ -1,6 +1,6 @@
 ﻿namespace ConnectionLogger.AsyncReceiver.Interfaces;
 
-public interface IRequestProduser
+public interface IRequestProducer
 {
     Task SendAsync(object obj, string correlationId, Dictionary<string, object> headers);
 
