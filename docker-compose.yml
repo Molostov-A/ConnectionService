@@ -52,7 +52,7 @@ services:
     ports:
       - "5101:5100"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5100
       - DOTNET_RUNNING_IN_CONTAINER=true
     restart: "no"
@@ -72,7 +72,7 @@ services:
     ports:
       - "5201:5200"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:5200
       - DOTNET_RUNNING_IN_CONTAINER=true
     networks:
