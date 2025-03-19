@@ -50,7 +50,11 @@ services:
       dockerfile: src/ConnectionLogger.Api/Dockerfile
     container_name: connectionlogger_api
     ports:
-      - "5000:5000"
+      - "5101:5100"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5100
+      - DOTNET_RUNNING_IN_CONTAINER=true
     restart: "no"
     networks:
       - my_network
@@ -60,12 +64,17 @@ services:
     deploy:
       restart_policy:
         condition: none
-
   connectionlogger_asyncreceiver:
     build:
       context: .
       dockerfile: src/ConnectionLogger.AsyncReceiver/Dockerfile
     container_name: connectionlogger_asyncreceiver
+    ports:
+      - "5201:5200"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:5200
+      - DOTNET_RUNNING_IN_CONTAINER=true
     networks:
       - my_network
     restart: "no"
